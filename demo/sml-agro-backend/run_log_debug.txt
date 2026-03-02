@@ -1,0 +1,89 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------------< com.smlagro:sml-agro-backend >--------------------
+[INFO] Building sml-agro-backend 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] >>> spring-boot:3.4.2:run (default-cli) > test-compile @ sml-agro-backend >>>
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ sml-agro-backend ---
+[INFO] Copying 3 resources from src\main\resources to target\classes
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.13.0:compile (default-compile) @ sml-agro-backend ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 70 source files with javac [debug parameters release 21] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[48,39] cannot find symbol
+  symbol:   method getName()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[49,46] cannot find symbol
+  symbol:   method getDescription()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[50,43] cannot find symbol
+  symbol:   method getCategory()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[51,40] cannot find symbol
+  symbol:   method getPrice()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[52,43] cannot find symbol
+  symbol:   method getImageUrl()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[53,48] cannot find symbol
+  symbol:   method getStockQuantity()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[54,39] cannot find symbol
+  symbol:   method getUnit()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[55,46] cannot find symbol
+  symbol:   method getIsAvailable()
+  location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[56,49] cannot find symbol
+  symbol:   method getSpecifications()
+  location: variable productDetails of type com.smlagro.model.Product
+[INFO] 9 errors 
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  1.911 s
+[INFO] Finished at: 2026-02-21T13:51:33+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project sml-agro-backend: Compilation failure: Compilation failure: 
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[48,39] cannot find symbol
+[ERROR]   symbol:   method getName()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[49,46] cannot find symbol
+[ERROR]   symbol:   method getDescription()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[50,43] cannot find symbol
+[ERROR]   symbol:   method getCategory()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[51,40] cannot find symbol
+[ERROR]   symbol:   method getPrice()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[52,43] cannot find symbol
+[ERROR]   symbol:   method getImageUrl()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[53,48] cannot find symbol
+[ERROR]   symbol:   method getStockQuantity()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[54,39] cannot find symbol
+[ERROR]   symbol:   method getUnit()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[55,46] cannot find symbol
+[ERROR]   symbol:   method getIsAvailable()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] /E:/SML WEB/SML-AGRO-main/demo/sml-agro-backend/src/main/java/com/smlagro/service/impl/ProductServiceImpl.java:[56,49] cannot find symbol
+[ERROR]   symbol:   method getSpecifications()
+[ERROR]   location: variable productDetails of type com.smlagro.model.Product
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException
