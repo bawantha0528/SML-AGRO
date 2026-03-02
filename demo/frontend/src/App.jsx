@@ -1,12 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { Navbar } from './components/Navbar';
-import { HeroSection } from './components/HeroSection';
-import { ProductsSection } from './components/ProductsSection';
-import { ProductCatalog } from './components/ProductCatalog';
-import { ProductDetails } from './components/ProductDetails';
+import { useEffect, useState } from 'react';
 import { AboutSection } from './components/AboutSection';
 import { Footer } from './components/Footer';
+import { HeroSection } from './components/HeroSection';
+import { Navbar } from './components/Navbar';
+import { ProductCatalog } from './components/ProductCatalog';
+import { ProductDetails } from './components/ProductDetails';
+import { ProductsSection } from './components/ProductsSection';
 
+import { AnimatePresence, motion } from 'framer-motion';
 import { AdminLayout } from './admin/AdminLayout';
 
 export function App() {
@@ -54,51 +55,108 @@ export function App() {
     return () => window.removeEventListener('hashchange', handleHash);
   }, []);
 
-  if (currentPage === 'admin') {
-    return <AdminLayout />;
-  }
+  const pageVariants = {
+    initial: { opacity: 0, y: 20 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -20 }
+  };
+
+  const appVariants = {
+    initial: { opacity: 0 },
+    animate: { opacity: 1 },
+    exit: { opacity: 0 }
+  };
 
   return (
-    <div className="min-h-screen bg-sml-cream font-sans text-sml-text selection:bg-sml-green selection:text-white">
-      {/* Background image for navbar and hero - fixed to viewport */}
-      {currentPage === 'home' && (
-        <div
-          className="fixed inset-0 pointer-events-none z-0"
-          style={{
-            backgroundImage: 'url("/coconut-plantation-21901848.webp")',
-            backgroundPosition: 'center',
-            backgroundSize: 'cover',
-            backgroundAttachment: 'fixed',
-            opacity: 0.20,
-            zIndex: 0,
-          }}
-        />
+    <AnimatePresence mode="wait">
+      {currentPage === 'admin' ? (
+        <motion.div
+          key="admin"
+          variants={appVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.3 }}
+        >
+          <AdminLayout />
+        </motion.div>
+      ) : (
+        <motion.div
+          key="main-app"
+          variants={appVariants}
+          initial="initial"
+          animate="animate"
+          exit="exit"
+          transition={{ duration: 0.3 }}
+          className="min-h-screen bg-sml-cream font-sans text-sml-text selection:bg-sml-green selection:text-white"
+        >
+          {/* Background image for navbar and hero - fixed to viewport */}
+          {currentPage === 'home' && (
+            <div
+              className="fixed inset-0 pointer-events-none z-0"
+              style={{
+                backgroundImage: 'url("/coconut-plantation-21901848.webp")',
+                backgroundPosition: 'center',
+                backgroundSize: 'cover',
+                backgroundAttachment: 'fixed',
+                opacity: 0.20,
+                zIndex: 0,
+              }}
+            />
+          )}
+
+          <Navbar onNavigate={navigate} currentPage={currentPage} />
+
+          <AnimatePresence mode="wait">
+            {currentPage === 'home' &&
+              <motion.main
+                key="home"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.4 }}
+                className="relative z-10"
+              >
+                <HeroSection onNavigate={navigate} />
+                {/* ProductsSection is the homepage preview of products */}
+                <ProductsSection onNavigate={navigate} />
+                <AboutSection />
+              </motion.main>
+            }
+
+            {currentPage === 'catalog' &&
+              <motion.main
+                key="catalog"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.4 }}
+                className="pt-20"
+              >
+                <ProductCatalog onNavigate={navigate} />
+              </motion.main>
+            }
+
+            {currentPage === 'product-details' && selectedProductId &&
+              <motion.main
+                key="product-details"
+                variants={pageVariants}
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                transition={{ duration: 0.4 }}
+                className="pt-20"
+              >
+                <ProductDetails id={selectedProductId} onNavigate={navigate} />
+              </motion.main>
+            }
+          </AnimatePresence>
+
+          <Footer />
+        </motion.div>
       )}
-
-      <Navbar onNavigate={navigate} currentPage={currentPage} />
-
-      {currentPage === 'home' &&
-        <main className="relative z-10">
-          <HeroSection onNavigate={navigate} />
-          {/* ProductsSection is the homepage preview of products */}
-          <ProductsSection onNavigate={navigate} />
-          <AboutSection />
-        </main>
-      }
-
-      {currentPage === 'catalog' &&
-        <main className="pt-20">
-          <ProductCatalog onNavigate={navigate} />
-        </main>
-      }
-
-      {currentPage === 'product-details' && selectedProductId &&
-        <main className="pt-20">
-          <ProductDetails id={selectedProductId} onNavigate={navigate} />
-        </main>
-      }
-
-      <Footer />
-    </div>);
-
+    </AnimatePresence>
+  );
 }
