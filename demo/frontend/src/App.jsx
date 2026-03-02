@@ -3,20 +3,21 @@ import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { ProductsSection } from './components/ProductsSection';
 import { ProductCatalog } from './components/ProductCatalog';
-import { ProductCustomization } from './components/ProductCustomization';
+import { ProductDetails } from './components/ProductDetails';
 import { AboutSection } from './components/AboutSection';
-import { FactoryTour } from './components/FactoryTour';
-import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
-import { AgriBotChat } from './components/AgriBotChat';
 
-import { InquiryPage } from './components/InquiryPage';
 import { AdminLayout } from './admin/AdminLayout';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState('home');
-  const navigate = (page) => {
+  const [selectedProductId, setSelectedProductId] = useState(null);
+
+  const navigate = (page, productId = null) => {
     setCurrentPage(page);
+    if (productId) {
+      setSelectedProductId(productId);
+    }
     window.scrollTo({
       top: 0,
       behavior: 'smooth'
@@ -34,9 +35,7 @@ export function App() {
         return;
       }
 
-      if (hash === '#inquiry') {
-        setCurrentPage('inquiry');
-      } else if (hash === '#/admin') {
+      if (hash === '#/admin') {
         setCurrentPage('admin');
       } else if (hash) {
         const id = hash.substring(1);
@@ -57,10 +56,6 @@ export function App() {
 
   if (currentPage === 'admin') {
     return <AdminLayout />;
-  }
-
-  if (currentPage === 'inquiry') {
-    return <InquiryPage onNavigate={navigate} />;
   }
 
   return (
@@ -85,10 +80,9 @@ export function App() {
       {currentPage === 'home' &&
         <main className="relative z-10">
           <HeroSection onNavigate={navigate} />
+          {/* ProductsSection is the homepage preview of products */}
           <ProductsSection onNavigate={navigate} />
           <AboutSection />
-          <FactoryTour />
-          <ContactSection />
         </main>
       }
 
@@ -98,14 +92,13 @@ export function App() {
         </main>
       }
 
-      {currentPage === 'customize' &&
+      {currentPage === 'product-details' && selectedProductId &&
         <main className="pt-20">
-          <ProductCustomization onNavigate={navigate} />
+          <ProductDetails id={selectedProductId} onNavigate={navigate} />
         </main>
       }
 
       <Footer />
-      <AgriBotChat />
     </div>);
 
 }

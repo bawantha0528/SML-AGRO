@@ -2,11 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Menu,
   X,
-  Sparkles,
-  Leaf,
   ChevronDown,
-  Search,
-  Sliders,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -29,28 +25,13 @@ export function Navbar({ onNavigate, currentPage }) {
       name: 'ABOUT US',
       href: '#about',
     },
-    {
-      name: 'FACTORY TOUR',
-      href: '#tour',
-    },
-    {
-      name: 'CONTACT',
-      href: '#contact',
-    },
   ];
 
   const productSubLinks = [
     {
       name: 'Explore Products',
       page: 'catalog',
-      icon: Search,
       desc: 'Browse our full catalog',
-    },
-    {
-      name: 'Customize Order',
-      page: 'customize',
-      icon: Sliders,
-      desc: 'Configure your specs',
     },
   ];
 
@@ -167,7 +148,7 @@ export function Navbar({ onNavigate, currentPage }) {
                           className="w-full flex items-center px-4 py-3 hover:bg-sml-cream transition-colors group/item text-left"
                         >
                           <div className="w-9 h-9 rounded-lg bg-sml-cream-dark/50 flex items-center justify-center mr-3 group-hover/item:bg-sml-green group-hover/item:text-white transition-colors">
-                            <sub.icon className="w-4 h-4 text-sml-dark group-hover/item:text-white transition-colors" />
+                            <span className="text-xl">📦</span>
                           </div>
                           <div>
                             <p className="text-sm font-semibold text-sml-dark group-hover/item:text-sml-green transition-colors">
@@ -199,16 +180,6 @@ export function Navbar({ onNavigate, currentPage }) {
                 {link.name}
               </a>
             ))}
-
-            <button
-              onClick={() =>
-                document.getElementById('agribot-trigger')?.click()
-              }
-              className="flex items-center space-x-2 bg-sml-green-light text-sml-dark px-4 py-2 rounded-full text-xs font-bold hover:bg-white transition-colors shadow-[0_0_15px_rgba(76,175,80,0.3)] animate-pulse"
-            >
-              <span>AGRI BOT</span>
-              <Sparkles className="w-3 h-3" />
-            </button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -297,7 +268,7 @@ export function Navbar({ onNavigate, currentPage }) {
                           }}
                           className="w-full flex items-center pl-8 pr-3 py-3 text-gray-400 hover:text-sml-green-light text-sm text-left"
                         >
-                          <sub.icon className="w-4 h-4 mr-3" />
+                          <span className="mr-3 text-xl">📦</span>
                           <div>
                             <p className="font-medium">{sub.name}</p>
                             <p className="text-xs opacity-60">{sub.desc}</p>
@@ -326,17 +297,6 @@ export function Navbar({ onNavigate, currentPage }) {
                   {link.name}
                 </a>
               ))}
-
-              <button
-                onClick={() => {
-                  setIsOpen(false);
-                  document.getElementById('agribot-trigger')?.click();
-                }}
-                className="w-full mt-4 flex items-center justify-center space-x-2 bg-sml-green-light text-sml-dark px-4 py-3 rounded-md text-sm font-bold"
-              >
-                <span>CHAT WITH AGRI BOT</span>
-                <Sparkles className="w-4 h-4" />
-              </button>
             </div>
           </motion.div>
         )}
