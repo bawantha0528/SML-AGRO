@@ -14,54 +14,55 @@ const products = [
   {
     id: 1,
     name: 'Coir Fiber',
-    description:
-      'High-quality extracted fiber for industrial applications, mattresses, and upholstery.',
+    description: 'Premium grade coir fiber for industrial and agricultural applications. Our coir fiber is carefully processed to maintain optimal quality.',
     icon: Layers,
     color: 'bg-amber-100 text-amber-800',
+    price: 2.50,
   },
   {
     id: 2,
-    name: 'Coir Pith / Cocopeat',
-    description:
-      'Premium growing medium with excellent water retention for horticulture.',
+    name: 'Cocopeat',
+    description: 'High-quality cocopeat with excellent water retention properties. Perfect for hydroponic growing and soil amendment.',
     icon: Sprout,
     color: 'bg-green-100 text-green-800',
+    price: 1.80,
   },
   {
     id: 3,
     name: 'Coir Mats',
-    description:
-      'Durable, eco-friendly floor coverings and erosion control mats.',
+    description: 'Durable and eco-friendly coir mats for various applications. Available in different sizes and thicknesses.',
     icon: Grid,
     color: 'bg-orange-100 text-orange-800',
+    price: 8.99,
   },
   {
     id: 4,
     name: 'Grow Bags',
-    description:
-      'Ready-to-use planter bags for hydroponics and greenhouse farming.',
+    description: 'Biodegradable grow bags made from natural coir fiber. Ideal for plant nurseries and home gardening.',
     icon: Package,
     color: 'bg-blue-100 text-blue-800',
+    price: 3.25,
   },
   {
     id: 5,
     name: 'Coir Rope',
-    description:
-      'Strong, biodegradable yarn for agricultural and landscaping use.',
+    description: 'Strong and durable coir rope for marine, agricultural, and decorative purposes. Available in various diameters.',
     icon: Anchor,
     color: 'bg-yellow-100 text-yellow-800',
+    price: 4.50,
   },
   {
     id: 6,
     name: 'Coir Geotextiles',
-    description:
-      'Natural solution for soil stabilization and vegetation growth.',
+    description: 'Natural geotextile solutions for erosion control and soil stabilization. Eco-friendly alternative to synthetic materials.',
     icon: Disc,
     color: 'bg-stone-100 text-stone-800',
+    price: 12.00,
   },
 ];
 
 export function ProductsSection({ onNavigate }) {
+
   return (
     <section id="products" className="py-20 bg-sml-cream-dark/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -82,21 +83,10 @@ export function ProductsSection({ onNavigate }) {
           {products.map((product, index) => (
             <motion.div
               key={product.id}
-              initial={{
-                opacity: 0,
-                y: 20,
-              }}
-              whileInView={{
-                opacity: 1,
-                y: 0,
-              }}
-              viewport={{
-                once: true,
-              }}
-              transition={{
-                delay: index * 0.1,
-                duration: 0.5,
-              }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.1, duration: 0.5 }}
               className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-sml-cream-dark/30"
             >
               <div className="h-48 bg-sml-cream-dark/10 relative overflow-hidden flex items-center justify-center group-hover:bg-sml-cream-dark/20 transition-colors">
@@ -130,6 +120,15 @@ export function ProductsSection({ onNavigate }) {
               </div>
             </motion.div>
           ))}
+        </div>
+
+        <div className="text-center mt-12">
+          <button
+            onClick={() => onNavigate('catalog')}
+            className="inline-flex items-center gap-2 bg-sml-dark text-sml-cream px-8 py-3 rounded-full font-bold hover:bg-gray-800 transition-colors"
+          >
+            View Full Catalog <ArrowRight className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </section>
