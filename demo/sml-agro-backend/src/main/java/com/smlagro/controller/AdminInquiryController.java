@@ -1,0 +1,118 @@
+package com.smlagro.controller;
+
+import com.smlagro.dto.response.ApiResponse;
+import com.smlagro.dto.response.InquiryResponse;
+import com.smlagro.model.InquiryStatus;
+import com.smlagro.model.Priority;
+import com.smlagro.service.InquiryService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/admin/inquiries")
+public class AdminInquiryController {
+
+    private final InquiryService inquiryService;
+
+    @Autowired
+    public AdminInquiryController(InquiryService inquiryService) {
+        this.inquiryService = inquiryService;
+    }
+
+    /**
+     * GET /api/admin/inquiries
+     * Optional query params: status=NEW, search=keyword
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<List<InquiryResponse>>> getInquiries(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String search) {
+
+        List<InquiryResponse> inquiries;
+
+        if (search != null && !search.isBlank()) {
+            inquiries = inquiryService.searchInquiries(search, status);
+        } else if (status != null && !status.isBlank() && !status.equalsIgnoreCase("ALL")) {
+            try {
+                InquiryStatus statusEnum = InquiryStatus.valueOf(status.toUpperCase());
+                inquiries = inquiryService.getInquiriesByStatus(statusEnum);
+            } catch (IllegalArgumentException e) {
+                inquiries = inquiryService.getAllInquiries();
+            }
+        } else {
+            inquiries = inquiryService.getAllInquiries();
+        }
+
+        return ResponseEntity.ok(ApiResponse.ok(inquiries));
+    }
+
+    /**
+     * GET /api/admin/inquiries/{id}
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<ApiResponse<InquiryResponse>> getInquiry(@PathVariable Long id) {
+        try {
+            return ResponseEntity.ok(ApiResponse.ok(inquiryService.getInquiryById(id)));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * PATCH /api/admin/inquiries/{id}/status
+     * Body: { "status": "RESPONDED" }
+     */
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<ApiResponse<InquiryResponse>> updateStatus(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            InquiryStatus newStatus = InquiryStatus.valueOf(body.get("status").toUpperCase());
+            InquiryResponse updated = inquiryService.updateStatus(id, newStatus);
+            return ResponseEntity.ok(ApiResponse.ok("Status updated to " + newStatus, updated));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Invalid status value"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * PATCH /api/admin/inquiries/{id}/priority
+     * Body: { "priority": "HIGH" }
+     */
+    @PatchMapping("/{id}/priority")
+    public ResponseEntity<ApiResponse<InquiryResponse>> updatePriority(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            Priority priority = Priority.valueOf(body.get("priority").toUpperCase());
+            InquiryResponse updated = inquiryService.updatePriority(id, priority);
+            return ResponseEntity.ok(ApiResponse.ok("Priority updated", updated));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Invalid priority value"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * PATCH /api/admin/inquiries/{id}/notes
+     * Body: { "notes": "Called customer, interested in 500MT..." }
+     */
+    @PatchMapping("/{id}/notes")
+    public ResponseEntity<ApiResponse<InquiryResponse>> updateNotes(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            InquiryResponse updated = inquiryService.updateNotes(id, body.get("notes"));
+            return ResponseEntity.ok(ApiResponse.ok("Notes saved", updated));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+}
