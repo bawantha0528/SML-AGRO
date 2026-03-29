@@ -1,0 +1,36 @@
+# Root-level .gitignore
+
+# Output folders
+**/target/
+**/node_modules/
+**/dist/
+
+# IDE files
+.idea/
+.vscode/
+*.iml
+
+# Log and temporary files
+*.log
+*.txt
+backend_log*
+frontend_log*
+run_log*
+backend_startup.log
+backend_log_final_run_2.txt
+backend_log_new.txt
+backend_log_site_run.txt
+
+# Backup and fix-related folders
+data_before_fix/
+mysql_old/
+mysql_corrupted/
+integration_test_files.zip
+SML-AGRO-dev-demo-branch.zip
+
+# XAMPP specific database folders (if any)
+**/mysql/data/
+
+# OS files
+.DS_Store
+Thumbs.db

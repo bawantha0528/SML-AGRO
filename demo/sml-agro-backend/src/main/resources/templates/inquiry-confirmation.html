@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inquiry Confirmation</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            color: #333333;
+        }
+        .container {
+            max-width: 600px;
+            margin: 40px auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .header {
+            background-color: #2e7d32;
+            color: #ffffff;
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 30px;
+            line-height: 1.6;
+        }
+        .content h2 {
+            color: #2e7d32;
+            font-size: 20px;
+            margin-top: 0;
+        }
+        .reference-box {
+            background-color: #e8f5e9;
+            border-left: 4px solid #4caf50;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        .reference-box p {
+            margin: 0;
+            font-size: 16px;
+        }
+        .reference-number {
+            font-weight: bold;
+            color: #1b5e20;
+        }
+        .footer {
+            background-color: #f1f1f1;
+            padding: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666666;
+            border-top: 1px solid #eeeeee;
+        }
+        .footer p {
+            margin: 5px 0;
+        }
+        .contact-info {
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>SML Agro</h1>
+        </div>
+        <div class="content">
+            <h2>Thank You for Your Inquiry!</h2>
+            <p>Hello <span th:text="${inquiry.customerName}">Customer</span>,</p>
+            <p>We have successfully received your inquiry and our team is already reviewing your request.</p>
+            
+            <div class="reference-box">
+                <p>Your Inquiry Reference Number is: <span class="reference-number" th:text="${inquiry.inquiryNumber}">#12345678</span></p>
+            </div>
+            
+            <p>We aim to respond to all inquiries within <strong>24 hours</strong>. If your request is urgent, please don't hesitate to contact us directly using your reference number.</p>
+            
+            <p>Best regards,<br>The SML Agro Team</p>
+        </div>
+        <div class="footer">
+            <p><strong>SML Agro</strong> - Empowering Agriculture</p>
+            <div class="contact-info">
+                <p>Phone: +1 234 567 890</p>
+                <p>Email: support@smlagro.com</p>
+            </div>
+            <p style="margin-top: 20px; font-size: 12px; color: #999;">This is an automatically generated email. Please do not reply to this email.</p>
+        </div>
+    </div>
+</body>
+</html>
