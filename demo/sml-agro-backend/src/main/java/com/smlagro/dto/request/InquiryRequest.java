@@ -31,6 +31,8 @@ public class InquiryRequest {
 
     private String specialRequirements;
 
+    private String customizationDetails;
+
     public InquiryRequest() {
     }
 
@@ -90,11 +92,15 @@ public class InquiryRequest {
         this.estimatedQuantity = estimatedQuantity;
     }
 
-    public String getSpecialRequirements() {
-        return specialRequirements;
-    }
-
     public void setSpecialRequirements(String specialRequirements) {
         this.specialRequirements = specialRequirements;
+    }
+
+    public String getCustomizationDetails() {
+        return customizationDetails;
+    }
+
+    public void setCustomizationDetails(String customizationDetails) {
+        this.customizationDetails = customizationDetails;
     }
 }
