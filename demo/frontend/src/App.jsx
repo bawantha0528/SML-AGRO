@@ -15,7 +15,12 @@ import { AdminLayout } from './admin/AdminLayout';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState('home');
-  const navigate = (page) => {
+  const [customizationData, setCustomizationData] = useState(null);
+
+  const navigate = (page, data = null) => {
+    if (data) setCustomizationData(data);
+    else if (page !== 'inquiry') setCustomizationData(null);
+
     setCurrentPage(page);
     window.scrollTo({
       top: 0,
@@ -60,7 +65,7 @@ export function App() {
   }
 
   if (currentPage === 'inquiry') {
-    return <InquiryPage onNavigate={navigate} />;
+    return <InquiryPage onNavigate={navigate} initialCustomization={customizationData} />;
   }
 
   return (

@@ -181,6 +181,7 @@ public class InquiryServiceImpl implements InquiryService {
         inquiry.setProductsRequested(req.getProductsRequested());
         inquiry.setEstimatedQuantity(req.getEstimatedQuantity());
         inquiry.setSpecialRequirements(req.getSpecialRequirements());
+        inquiry.setCustomizationDetails(req.getCustomizationDetails());
         inquiry.setStatus(InquiryStatus.NEW);
         inquiry.setPriority(Priority.MEDIUM);
         return inquiry;
