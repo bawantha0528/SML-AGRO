@@ -28,15 +28,26 @@ const INITIAL_FORM = {
 };
 
 export function InquiryPage({ onNavigate, initialCustomization }) {
-    const [form, setForm] = (initialCustomization ?
-        useState({
+    const [form, setForm] = useState(() => {
+        if (!initialCustomization) return INITIAL_FORM;
+        
+        // Handle potential property name mismatches between customization data and inquiry form
+        const productType = initialCustomization.productType || 
+                         (initialCustomization.productsRequested?.name) || 
+                         '';
+                         
+        const quantityVal = initialCustomization.quantity || 
+                          initialCustomization.estimatedQuantity || 
+                          '100';
+                          
+        return {
             ...INITIAL_FORM,
-            productsRequested: initialCustomization.productType,
-            estimatedQuantity: initialCustomization.quantity.toString(),
-            customizationDetails: JSON.stringify(initialCustomization),
-            specialRequirements: initialCustomization.customNotes || ''
-        }) :
-        useState(INITIAL_FORM));
+            productsRequested: productType,
+            estimatedQuantity: String(quantityVal),
+            customizationDetails: initialCustomization.customizationDetails || JSON.stringify(initialCustomization),
+            specialRequirements: initialCustomization.customNotes || initialCustomization.specialRequirements || ''
+        };
+    });
 
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(null);

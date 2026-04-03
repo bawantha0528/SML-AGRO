@@ -27,7 +27,7 @@ export function ProductCustomization({ onNavigate }) {
     const fetchProducts = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`${API}/admin/products`);
+        const response = await fetch(`${API}/public/products`);
         if (!response.ok) throw new Error('Failed to fetch products');
         const data = await response.json();
         setProducts(data);
