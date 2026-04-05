@@ -2,6 +2,82 @@ import React, { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, X, Send, ChevronDown } from 'lucide-react';
 
+const FAQ_RESPONSES = {
+  products:
+    'We sell coconut-based export products including coconut shell charcoal briquettes, desiccated coconut, coconut fiber, and private-label packaged items.',
+  shipping:
+    'Yes, we ship internationally. Share your country and we can confirm delivery options and lead time.',
+  moq:
+    'Minimum order quantity depends on the product, but most export orders usually start from one 20ft container (or equivalent volume).',
+  quote:
+    "To get a quote, share product type, quantity, destination country, and packaging preference. You can also use the 'Customize Your Order' section.",
+  payment:
+    'Payment terms are typically T/T bank transfer with an advance payment and balance before shipment. Final terms are confirmed in your quotation.',
+};
+
+const FAQ_KEYWORDS = {
+  products: ['what products do you sell', 'products do you sell', 'product list', 'products'],
+  shipping: ['do you ship', 'shipping', 'ship to', 'delivery to'],
+  moq: ['minimum order quantity', 'moq', 'minimum order', 'min order'],
+  quote: ['get a quote', 'how do i get a quote', 'quotation', 'price quote', 'quote'],
+  payment: ['payment terms', 'payment', 'how can i pay', 'pay'],
+};
+
+const normalizeMessage = (text = '') =>
+  text
+    .toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+const toTitleCase = (value = '') =>
+  value
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+
+const extractCountryFromShipping = (text = '') => {
+  const match = text.match(/\b(?:do\s+you\s+)?(?:ship|shipping)\s+to\s+([a-zA-Z\s-]+?)(?:[?.!,]|$)/i);
+  if (!match?.[1]) {
+    return null;
+  }
+
+  return toTitleCase(match[1].trim());
+};
+
+const hasKeywordMatch = (normalizedText, keywords) =>
+  keywords.some((keyword) => normalizedText.includes(keyword));
+
+const getFaqResponse = (text = '') => {
+  const normalizedText = normalizeMessage(text);
+
+  if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.products)) {
+    return FAQ_RESPONSES.products;
+  }
+
+  if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.shipping)) {
+    const country = extractCountryFromShipping(text);
+    return country
+      ? `Yes, we ship to ${country}. Delivery timelines and export documentation depend on destination port and order size.`
+      : FAQ_RESPONSES.shipping;
+  }
+
+  if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.moq)) {
+    return FAQ_RESPONSES.moq;
+  }
+
+  if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.quote)) {
+    return FAQ_RESPONSES.quote;
+  }
+
+  if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.payment)) {
+    return FAQ_RESPONSES.payment;
+  }
+
+  return null;
+};
+
 export function AgriBotChat() {
   const createWelcomeMessage = () => ({
     id: Date.now(),
@@ -71,18 +147,10 @@ export function AgriBotChat() {
 
     // Mock AI Response
     responseTimeoutRef.current = setTimeout(() => {
-      let botResponse =
+      const faqResponse = getFaqResponse(text);
+      const botResponse =
+        faqResponse ||
         'I can help you with that. Our team will analyze your request and provide detailed data shortly.';
-      if (
-        text.toLowerCase().includes('price') ||
-        text.toLowerCase().includes('quote')
-      ) {
-        botResponse =
-          "I can help generate a quote. Please use the 'Customize Your Order' section to specify your requirements.";
-      } else if (text.toLowerCase().includes('doc')) {
-        botResponse =
-          'For exports to the EU, we provide Phytosanitary Certificates, Certificate of Origin as standard.';
-      }
 
       const newBotMessage = {
         id: Date.now() + 1,
