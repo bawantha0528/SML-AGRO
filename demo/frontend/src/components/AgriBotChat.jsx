@@ -31,6 +31,60 @@ const FAQ_QUESTIONS = [
   'Payment terms?',
 ];
 
+const POPULAR_QUESTIONS_STORAGE_KEY = 'agribot_popular_questions';
+
+const createInitialPopularQuestionCounts = () => ({
+  products: 0,
+  shipping: 0,
+  moq: 0,
+  quote: 0,
+  payment: 0,
+  other: 0,
+});
+
+const POPULAR_QUESTION_LABELS = {
+  products: 'Products',
+  shipping: 'Shipping',
+  moq: 'MOQ',
+  quote: 'Quote',
+  payment: 'Payment',
+  other: 'Other',
+};
+
+const loadPopularQuestionCounts = () => {
+  const defaultCounts = createInitialPopularQuestionCounts();
+  if (typeof window === 'undefined') {
+    return defaultCounts;
+  }
+
+  try {
+    const rawData = window.localStorage.getItem(POPULAR_QUESTIONS_STORAGE_KEY);
+    if (!rawData) {
+      return defaultCounts;
+    }
+
+    const parsed = JSON.parse(rawData);
+    if (!parsed || typeof parsed !== 'object') {
+      return defaultCounts;
+    }
+
+    return {
+      ...defaultCounts,
+      ...parsed,
+    };
+  } catch {
+    return defaultCounts;
+  }
+};
+
+const savePopularQuestionCounts = (counts) => {
+  if (typeof window === 'undefined') {
+    return;
+  }
+
+  window.localStorage.setItem(POPULAR_QUESTIONS_STORAGE_KEY, JSON.stringify(counts));
+};
+
 const normalizeMessage = (text = '') =>
   text
     .toLowerCase()
@@ -57,30 +111,45 @@ const extractCountryFromShipping = (text = '') => {
 const hasKeywordMatch = (normalizedText, keywords) =>
   keywords.some((keyword) => normalizedText.includes(keyword));
 
-const getFaqResponse = (text = '') => {
+const getFaqMatch = (text = '') => {
   const normalizedText = normalizeMessage(text);
 
   if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.products)) {
-    return FAQ_RESPONSES.products;
+    return {
+      intent: 'products',
+      response: FAQ_RESPONSES.products,
+    };
   }
 
   if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.shipping)) {
     const country = extractCountryFromShipping(text);
-    return country
-      ? `Yes, we ship to ${country}. Delivery timelines and export documentation depend on destination port and order size.`
-      : FAQ_RESPONSES.shipping;
+    return {
+      intent: 'shipping',
+      response: country
+        ? `Yes, we ship to ${country}. Delivery timelines and export documentation depend on destination port and order size.`
+        : FAQ_RESPONSES.shipping,
+    };
   }
 
   if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.moq)) {
-    return FAQ_RESPONSES.moq;
+    return {
+      intent: 'moq',
+      response: FAQ_RESPONSES.moq,
+    };
   }
 
   if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.quote)) {
-    return FAQ_RESPONSES.quote;
+    return {
+      intent: 'quote',
+      response: FAQ_RESPONSES.quote,
+    };
   }
 
   if (hasKeywordMatch(normalizedText, FAQ_KEYWORDS.payment)) {
-    return FAQ_RESPONSES.payment;
+    return {
+      intent: 'payment',
+      response: FAQ_RESPONSES.payment,
+    };
   }
 
   return null;
@@ -99,8 +168,14 @@ export function AgriBotChat() {
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [isFaqMenuOpen, setIsFaqMenuOpen] = useState(false);
+  const [popularQuestionCounts, setPopularQuestionCounts] = useState(() => loadPopularQuestionCounts());
   const messagesEndRef = useRef(null);
   const responseTimeoutRef = useRef(null);
+
+  const topPopularQuestions = Object.entries(popularQuestionCounts)
+    .filter(([, count]) => count > 0)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 3);
 
   const formatTime = (timestamp) =>
     new Date(timestamp).toLocaleTimeString([], {
@@ -157,9 +232,20 @@ export function AgriBotChat() {
 
     // Mock AI Response
     responseTimeoutRef.current = setTimeout(() => {
-      const faqResponse = getFaqResponse(text);
+      const faqMatch = getFaqMatch(text);
+      const intentKey = faqMatch?.intent || 'other';
+
+      setPopularQuestionCounts((prev) => {
+        const next = {
+          ...prev,
+          [intentKey]: (prev[intentKey] || 0) + 1,
+        };
+        savePopularQuestionCounts(next);
+        return next;
+      });
+
       const botResponse =
-        faqResponse ||
+        faqMatch?.response ||
         'I can help you with that. Our team will analyze your request and provide detailed data shortly.';
 
       const newBotMessage = {
@@ -314,6 +400,23 @@ export function AgriBotChat() {
                 ))}
               </div>
             )}
+
+            <div className="px-3 sm:px-4 pb-2 bg-gray-50 border-t border-gray-100">
+              <p className="text-[11px] font-medium text-gray-500 mb-2">Popular Questions</p>
+              <div className="flex flex-wrap gap-2">
+                {topPopularQuestions.length === 0 && (
+                  <span className="text-[11px] text-gray-400">No trending questions yet.</span>
+                )}
+                {topPopularQuestions.map(([key, count]) => (
+                  <span
+                    key={key}
+                    className="px-2.5 py-1 rounded-full bg-white border border-gray-200 text-[11px] text-gray-600"
+                  >
+                    {POPULAR_QUESTION_LABELS[key] || key}: {count}
+                  </span>
+                ))}
+              </div>
+            </div>
 
             {/* Input Area */}
             <div
