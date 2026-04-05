@@ -287,18 +287,18 @@ export function AgriBotChat() {
             </div>
 
             {/* FAQ Actions */}
-            <div className="px-3 sm:px-4 py-2 bg-gray-50 flex gap-2 overflow-x-auto border-t border-gray-100">
+            <div className="px-3 sm:px-4 py-2 bg-gray-50 flex items-center gap-2 overflow-hidden border-t border-gray-100">
               <button
                 onClick={() => setIsFaqMenuOpen((prev) => !prev)}
                 disabled={isTyping}
-                className="whitespace-nowrap px-3 py-1 bg-white border border-sml-green/30 text-sml-green text-xs rounded-full hover:bg-sml-green hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="inline-flex shrink-0 min-w-[88px] items-center justify-center whitespace-nowrap px-3 py-1.5 bg-white border border-sml-green/30 text-sml-green text-xs leading-none rounded-full hover:bg-sml-green hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isFaqMenuOpen ? 'Hide FAQs' : 'FAQs'}
               </button>
             </div>
 
             {isFaqMenuOpen && (
-              <div className="px-3 sm:px-4 pb-2 bg-gray-50 flex flex-wrap gap-2">
+              <div className="px-3 sm:px-4 pb-2 bg-gray-50 flex flex-wrap gap-2 overflow-hidden">
                 {FAQ_QUESTIONS.map((question) => (
                   <button
                     key={question}
