@@ -23,6 +23,14 @@ const FAQ_KEYWORDS = {
   payment: ['payment terms', 'payment', 'how can i pay', 'pay'],
 };
 
+const FAQ_QUESTIONS = [
+  'What products do you sell?',
+  'Do you ship to [country]?',
+  'What is minimum order quantity?',
+  'How do I get a quote?',
+  'Payment terms?',
+];
+
 const normalizeMessage = (text = '') =>
   text
     .toLowerCase()
@@ -90,6 +98,7 @@ export function AgriBotChat() {
   const [messages, setMessages] = useState(() => [createWelcomeMessage()]);
   const [inputValue, setInputValue] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isFaqMenuOpen, setIsFaqMenuOpen] = useState(false);
   const messagesEndRef = useRef(null);
   const responseTimeoutRef = useRef(null);
 
@@ -127,6 +136,7 @@ export function AgriBotChat() {
     }
     setIsTyping(false);
     setInputValue('');
+    setIsFaqMenuOpen(false);
     setMessages([createWelcomeMessage()]);
     setIsOpen(false);
   };
@@ -163,8 +173,6 @@ export function AgriBotChat() {
       setMessages((prev) => [...prev, newBotMessage]);
     }, 1000);
   };
-
-  const quickActions = ['Product Info', 'Pricing', 'Export Docs', 'Contact'];
 
   return (
     <>
@@ -278,19 +286,34 @@ export function AgriBotChat() {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Quick Actions */}
-            <div className="px-3 sm:px-4 py-2 bg-gray-50 flex gap-2 overflow-x-auto">
-              {quickActions.map((action) => (
-                <button
-                  key={action}
-                  onClick={() => handleSendMessage(`Tell me about ${action}`)}
-                  disabled={isTyping}
-                  className="whitespace-nowrap px-3 py-1 bg-white border border-sml-green/30 text-sml-green text-xs rounded-full hover:bg-sml-green hover:text-white transition-colors"
-                >
-                  {action}
-                </button>
-              ))}
+            {/* FAQ Actions */}
+            <div className="px-3 sm:px-4 py-2 bg-gray-50 flex gap-2 overflow-x-auto border-t border-gray-100">
+              <button
+                onClick={() => setIsFaqMenuOpen((prev) => !prev)}
+                disabled={isTyping}
+                className="whitespace-nowrap px-3 py-1 bg-white border border-sml-green/30 text-sml-green text-xs rounded-full hover:bg-sml-green hover:text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isFaqMenuOpen ? 'Hide FAQs' : 'FAQs'}
+              </button>
             </div>
+
+            {isFaqMenuOpen && (
+              <div className="px-3 sm:px-4 pb-2 bg-gray-50 flex flex-wrap gap-2">
+                {FAQ_QUESTIONS.map((question) => (
+                  <button
+                    key={question}
+                    onClick={() => {
+                      setIsFaqMenuOpen(false);
+                      handleSendMessage(question);
+                    }}
+                    disabled={isTyping}
+                    className="text-left px-3 py-2 bg-white border border-gray-200 text-gray-700 text-xs rounded-lg hover:border-sml-green hover:text-sml-green transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {question}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Input Area */}
             <div
