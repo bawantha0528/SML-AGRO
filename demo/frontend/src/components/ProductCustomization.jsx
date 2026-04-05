@@ -7,9 +7,27 @@ export function ProductCustomization({ onNavigate }) {
     productType: 'Coir Mats',
     dimensions: '1m x 10m',
     thickness: '10mm',
+    packaging: 'Standard Bale',
     quantity: 100,
     customNotes: '',
   });
+
+  const basePrices = {
+    'Coir Mats': 12.50,
+    'Grow Bags': 8.75,
+    'Coir Pith Blocks': 5.20,
+    'Geotextiles': 15.00
+  };
+
+  const estPrice = (basePrices[config.productType] || 10) * config.quantity;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onNavigate('inquiry', {
+      ...config,
+      totalEstimate: estPrice
+    });
+  };
 
   return (
     <section id="customize" className="py-12 bg-white min-h-screen">
@@ -77,17 +95,34 @@ export function ProductCustomization({ onNavigate }) {
               </div>
             </div>
 
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity (Units)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={config.quantity}
-                onChange={(e) => setConfig({ ...config, quantity: parseInt(e.target.value) })}
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Packaging Options
+                </label>
+                <select
+                  value={config.packaging}
+                  onChange={(e) => setConfig({ ...config, packaging: e.target.value })}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green"
+                >
+                  <option>Standard Bale</option>
+                  <option>Palletized (EU Stand.)</option>
+                  <option>Bulk (Container Load)</option>
+                  <option>Retail Ready Pack</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Quantity (Units)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={config.quantity}
+                  onChange={(e) => setConfig({ ...config, quantity: parseInt(e.target.value) || 0 })}
+                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green"
+                />
+              </div>
             </div>
 
             <div className="mb-8">
@@ -103,14 +138,17 @@ export function ProductCustomization({ onNavigate }) {
               />
             </div>
 
-            <button className="w-full bg-sml-dark text-sml-cream py-3 rounded-lg hover:bg-gray-800 font-bold flex items-center justify-center space-x-2">
+            <button 
+              onClick={handleSubmit}
+              className="w-full bg-sml-dark text-sml-cream py-3 rounded-lg hover:bg-gray-800 font-bold flex items-center justify-center space-x-2"
+            >
               <Send className="w-4 h-4" />
-              <span>Submit Configuration</span>
+              <span>Add to Inquiry</span>
             </button>
           </div>
 
           {/* Summary Panel */}
-          <div className="bg-sml-cream rounded-2xl p-8 h-fit">
+          <div className="bg-sml-cream rounded-2xl p-8 h-fit lg:sticky lg:top-24">
             <h3 className="text-lg font-bold text-sml-dark mb-6">Order Summary</h3>
             <div className="space-y-4 mb-8">
               <div className="flex justify-between text-sm">
@@ -118,16 +156,23 @@ export function ProductCustomization({ onNavigate }) {
                 <span className="font-bold text-sml-dark">{config.productType}</span>
               </div>
               <div className="flex justify-between text-sm">
+                <span className="text-gray-600">Packaging:</span>
+                <span className="font-bold text-sml-dark">{config.packaging}</span>
+              </div>
+              <div className="flex justify-between text-sm">
                 <span className="text-gray-600">Quantity:</span>
                 <span className="font-bold text-sml-dark">{config.quantity} units</span>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Est. Price:</span>
-                <span className="font-bold text-sml-green text-lg">
-                  ${config.quantity * 12.50}
+              <div className="border-t border-sml-cream-dark pt-4 flex justify-between items-center">
+                <span className="text-gray-600 font-bold">Est. Total:</span>
+                <span className="text-2xl font-bold text-sml-green">
+                  ${estPrice.toFixed(2)}
                 </span>
               </div>
             </div>
+            <p className="text-xs text-gray-500 italic">
+              * Final price may vary based on shipping destination and current market rates.
+            </p>
           </div>
         </div>
       </div>

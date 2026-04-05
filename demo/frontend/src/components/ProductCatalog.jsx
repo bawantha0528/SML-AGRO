@@ -123,13 +123,20 @@ export function ProductCatalog({ onNavigate }) {
                         {product.stockQuantity > 0 ? `In Stock (${product.stockQuantity})` : 'Out of Stock'}
                       </p>
                     </div>
-                    <button
-                      onClick={() => onNavigate('inquiry')}
-                      className="w-full bg-sml-dark text-sml-cream py-3 rounded-lg hover:bg-gray-800 font-bold tracking-wide transition-colors flex items-center justify-center"
-                    >
-                      <ShoppingBag className="w-4 h-4 mr-2" />
-                      Inquire Now
-                    </button>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => onNavigate('customize')}
+                        className="bg-sml-cream text-sml-dark py-2 px-3 rounded-lg hover:bg-sml-cream-dark border border-sml-cream-dark font-bold text-xs transition-colors flex items-center justify-center"
+                      >
+                        Customize
+                      </button>
+                      <button
+                        onClick={() => onNavigate('inquiry')}
+                        className="bg-sml-dark text-sml-cream py-2 px-3 rounded-lg hover:bg-gray-800 font-bold text-xs transition-colors flex items-center justify-center"
+                      >
+                        Inquire
+                      </button>
+                    </div>
                   </div>
                 </div>
               </motion.div>

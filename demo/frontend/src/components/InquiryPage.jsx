@@ -24,10 +24,20 @@ const INITIAL_FORM = {
     productsRequested: '',
     estimatedQuantity: '',
     specialRequirements: '',
+    customizationDetails: '',
 };
 
-export function InquiryPage({ onNavigate }) {
-    const [form, setForm] = useState(INITIAL_FORM);
+export function InquiryPage({ onNavigate, initialCustomization }) {
+    const [form, setForm] = (initialCustomization ?
+        useState({
+            ...INITIAL_FORM,
+            productsRequested: initialCustomization.productType,
+            estimatedQuantity: initialCustomization.quantity.toString(),
+            customizationDetails: JSON.stringify(initialCustomization),
+            specialRequirements: initialCustomization.customNotes || ''
+        }) :
+        useState(INITIAL_FORM));
+
     const [submitting, setSubmitting] = useState(false);
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState('');
@@ -43,7 +53,7 @@ export function InquiryPage({ onNavigate }) {
         setSuccess(null);
 
         try {
-            const res = await fetch('/api/inquiries/submit', {
+            const res = await fetch('http://localhost:8081/api/inquiries/submit', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),

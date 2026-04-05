@@ -45,6 +45,9 @@ public class Inquiry {
     @Column(name = "special_requirements", columnDefinition = "TEXT")
     private String specialRequirements;
 
+    @Column(name = "customization_details", columnDefinition = "TEXT")
+    private String customizationDetails;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     private InquiryStatus status;
@@ -169,6 +172,14 @@ public class Inquiry {
 
     public void setSpecialRequirements(String specialRequirements) {
         this.specialRequirements = specialRequirements;
+    }
+
+    public String getCustomizationDetails() {
+        return customizationDetails;
+    }
+
+    public void setCustomizationDetails(String customizationDetails) {
+        this.customizationDetails = customizationDetails;
     }
 
     public InquiryStatus getStatus() {
