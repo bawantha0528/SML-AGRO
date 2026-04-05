@@ -293,7 +293,7 @@ export function AgriBotChat() {
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-2 right-2 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-1rem)] sm:w-full max-w-md bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[calc(100vh-1rem)] sm:max-h-[600px]"
+            className="fixed bottom-2 right-2 sm:bottom-6 sm:right-6 z-50 w-[calc(100vw-1rem)] sm:w-full max-w-md bg-white rounded-xl sm:rounded-2xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col h-[calc(100vh-1rem)] sm:h-[600px]"
           >
             {/* Header */}
             <div className="bg-sml-dark p-4 flex justify-between items-center">
@@ -328,7 +328,7 @@ export function AgriBotChat() {
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-3 sm:p-4 space-y-4 bg-gray-50 h-[52vh] sm:h-[400px]">
+            <div className="flex-1 min-h-0 overflow-y-auto p-3 sm:p-4 space-y-4 bg-gray-50">
               {messages.map((msg) => (
                 <div
                   key={msg.id}
