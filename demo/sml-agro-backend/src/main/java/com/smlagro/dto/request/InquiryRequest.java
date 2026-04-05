@@ -92,10 +92,6 @@ public class InquiryRequest {
         this.estimatedQuantity = estimatedQuantity;
     }
 
-    public String getSpecialRequirements() {
-        return specialRequirements;
-    }
-
     public void setSpecialRequirements(String specialRequirements) {
         this.specialRequirements = specialRequirements;
     }

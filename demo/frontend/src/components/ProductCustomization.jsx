@@ -199,6 +199,23 @@ export function ProductCustomization({ onNavigate }) {
     );
   }
 
+  const basePrices = {
+    'Coir Mats': 12.50,
+    'Grow Bags': 8.75,
+    'Coir Pith Blocks': 5.20,
+    'Geotextiles': 15.00
+  };
+
+  const estPrice = (basePrices[config.productType] || 10) * config.quantity;
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onNavigate('inquiry', {
+      ...config,
+      totalEstimate: estPrice
+    });
+  };
+
   return (
     <section className="py-12 bg-white min-h-screen">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -417,6 +434,9 @@ export function ProductCustomization({ onNavigate }) {
               </div>
               <p className="text-xs text-gray-500 mt-3 italic">* Prices are estimates. Final quote confirmed after review.</p>
             </div>
+            <p className="text-xs text-gray-500 italic">
+              * Final price may vary based on shipping destination and current market rates.
+            </p>
           </div>
 
         </div>
