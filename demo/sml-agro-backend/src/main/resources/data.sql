@@ -161,3 +161,34 @@ FROM DUAL
 WHERE NOT EXISTS (
 	SELECT 1 FROM custom_catalog_products WHERE name = 'Coir Wall Art'
 );
+
+INSERT INTO custom_inquiries (
+    order_number, customer_name, email, phone, country, product_type, color, size, design_name, quantity, special_notes, calculated_price, budget_range, target_delivery_date, reference_images, status, created_at, updated_at
+)
+SELECT
+    'CUST-1001', 'Alice Smith', 'alice@example.com', '+1234567890', 'USA', 'Coir Mats', 'Natural', 'Large', 'Welcome Sign Design', 100, 'Please include logo on the top right.', 1500.00, '$1,000 - $5,000', '2026-06-01', NULL, 'NEW', NOW(6), NOW(6)
+FROM DUAL
+WHERE NOT EXISTS (
+    SELECT 1 FROM custom_inquiries WHERE order_number = 'CUST-1001'
+);
+
+INSERT INTO custom_inquiries (
+    order_number, customer_name, email, phone, country, product_type, color, size, design_name, quantity, special_notes, calculated_price, budget_range, target_delivery_date, reference_images, status, created_at, updated_at
+)
+SELECT
+    'CUST-1002', 'Bob Johnson', 'bob@example.com', '+0987654321', 'UK', 'Coir Bags', 'Brown', 'Medium', 'Eco Tote', 500, 'Double stitching needed.', 2500.00, '$1,000 - $5,000', '2026-07-15', NULL, 'IN_PRODUCTION', NOW(6), NOW(6)
+FROM DUAL
+WHERE NOT EXISTS (
+    SELECT 1 FROM custom_inquiries WHERE order_number = 'CUST-1002'
+);
+
+INSERT INTO custom_inquiries (
+    order_number, customer_name, email, phone, country, product_type, color, size, design_name, quantity, special_notes, calculated_price, budget_range, target_delivery_date, reference_images, status, created_at, updated_at
+)
+SELECT
+    'CUST-1003', 'Charlie Davis', 'charlie@example.com', '+1122334455', 'Australia', 'Coir Wall Art', 'Custom', 'Extra Large', 'Sunrise Pattern', 50, 'Using vibrant custom colored fibers.', 500.00, 'Under $1,000', '2026-08-10', NULL, 'QUOTED', NOW(6), NOW(6)
+FROM DUAL
+WHERE NOT EXISTS (
+    SELECT 1 FROM custom_inquiries WHERE order_number = 'CUST-1003'
+);
+

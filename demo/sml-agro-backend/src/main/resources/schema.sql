@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS custom_inquiries (
     design_name VARCHAR(120) NOT NULL,
     quantity INT NOT NULL,
     special_notes TEXT DEFAULT NULL,
+    calculated_price DOUBLE DEFAULT 0.0,
     budget_range VARCHAR(60) DEFAULT NULL,
     target_delivery_date VARCHAR(30) DEFAULT NULL,
     reference_images TEXT DEFAULT NULL,
