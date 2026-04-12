@@ -60,6 +60,9 @@ public class CustomProductOrder {
     @Column(name = "special_notes", columnDefinition = "TEXT")
     private String specialNotes;
 
+    @Column(name = "calculated_price")
+    private Double calculatedPrice = 0.0;
+
     @Column(name = "budget_range", length = 60)
     private String budgetRange;
 
