@@ -1,19 +1,26 @@
 package com.smlagro.service.impl;
 
-import com.smlagro.model.Product;
-import com.smlagro.model.ProductCategory;
-import com.smlagro.repository.ProductRepository;
-import com.smlagro.service.ProductService;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
+import com.smlagro.dto.response.ProductInquirySummaryResponse;
+import com.smlagro.model.Product;
+import com.smlagro.model.ProductCategory;
+import com.smlagro.repository.InquiryRepository;
+import com.smlagro.repository.ProductRepository;
+import com.smlagro.service.ProductService;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
     @Autowired
     private ProductRepository productRepository;
+
+    @Autowired
+    private InquiryRepository inquiryRepository;
 
     @Override
     public List<Product> getAllProducts() {
@@ -56,6 +63,16 @@ public class ProductServiceImpl implements ProductService {
         product.setSpecifications(productDetails.getSpecifications());
 
         return productRepository.save(product);
+    }
+
+    @Override
+    public List<ProductInquirySummaryResponse> getProductInquirySummary() {
+        return productRepository.findAll().stream()
+                .map(product -> new ProductInquirySummaryResponse(
+                        product.getId(),
+                        product.getName(),
+                        inquiryRepository.countByProductsRequestedIgnoreCase(product.getName())))
+                .collect(Collectors.toList());
     }
 
     @Override

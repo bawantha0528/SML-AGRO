@@ -1,15 +1,16 @@
 package com.smlagro.repository;
 
-import com.smlagro.model.Inquiry;
-import com.smlagro.model.InquiryStatus;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
+import com.smlagro.model.Inquiry;
+import com.smlagro.model.InquiryStatus;
 
 @Repository
 public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
@@ -19,6 +20,8 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
         List<Inquiry> findByStatusOrderByCreatedAtDesc(InquiryStatus status);
 
         List<Inquiry> findAllByOrderByCreatedAtDesc();
+
+        long countByProductsRequestedIgnoreCase(String productsRequested);
 
         long countByStatus(InquiryStatus status);
 

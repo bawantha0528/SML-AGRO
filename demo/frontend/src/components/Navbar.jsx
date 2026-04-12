@@ -1,14 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-  Menu,
-  X,
-  Sparkles,
-  Leaf,
-  ChevronDown,
-  Search,
-  Sliders,
+    ChevronDown,
+    Menu,
+    Search,
+    Sliders,
+    Sparkles,
+    X
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useEffect, useState } from 'react';
 
 export function Navbar({ onNavigate, currentPage }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -47,10 +46,10 @@ export function Navbar({ onNavigate, currentPage }) {
       desc: 'Browse our full catalog',
     },
     {
-      name: 'Customize Order',
+      name: 'Customized Products',
       page: 'customize',
       icon: Sliders,
-      desc: 'Configure your specs',
+      desc: 'Order custom coir crafts',
     },
   ];
 
@@ -81,7 +80,7 @@ export function Navbar({ onNavigate, currentPage }) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${scrolled ? 'bg-sml-dark shadow-lg py-3' : 'bg-sml-dark py-5'}`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out border-b ${scrolled ? 'bg-white/80 backdrop-blur-xl border-gray-200 shadow-[0_4px_20px_-2px_rgba(21,126,84,0.05)] py-4' : 'bg-transparent border-transparent py-8'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
@@ -96,10 +95,10 @@ export function Navbar({ onNavigate, currentPage }) {
               className="w-12 h-12 object-contain group-hover:scale-105 transition-transform"
             />
             <div className="flex flex-col items-center ml-2">
-              <span className="text-[#008542] font-black text-2xl leading-none tracking-[0.25em] ml-1">
+              <span className="text-[#10B981] font-black text-2xl leading-none tracking-[0.2em] ml-1">
                 SML
               </span>
-              <span className="text-[#39B54A] font-bold text-[8px] tracking-widest leading-none mt-0.5">
+              <span className="text-[#34D399] font-bold text-[8px] tracking-[0.3em] leading-none mt-0.5">
                 AGRO LANKA
               </span>
             </div>
@@ -110,7 +109,7 @@ export function Navbar({ onNavigate, currentPage }) {
             {/* HOME link */}
             <button
               onClick={handleHomeClick}
-              className="text-sml-light text-xs font-medium tracking-widest hover:text-sml-green-light transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green-light after:transition-all hover:after:w-full"
+              className="text-sml-dark text-xs font-bold tracking-widest hover:text-sml-green transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green after:transition-all hover:after:w-full"
             >
               HOME
             </button>
@@ -121,7 +120,7 @@ export function Navbar({ onNavigate, currentPage }) {
               onMouseEnter={() => setProductDropdownOpen(true)}
               onMouseLeave={() => setProductDropdownOpen(false)}
             >
-              <button className="flex items-center space-x-1 text-sml-light text-xs font-medium tracking-widest hover:text-sml-green-light transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green-light after:transition-all hover:after:w-full">
+              <button className="flex items-center space-x-1 text-sml-dark text-xs font-bold tracking-widest hover:text-sml-green transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green after:transition-all hover:after:w-full">
                 <span>PRODUCTS</span>
                 <ChevronDown
                   className={`w-3 h-3 transition-transform duration-200 ${productDropdownOpen ? 'rotate-180' : ''
@@ -194,7 +193,7 @@ export function Navbar({ onNavigate, currentPage }) {
                     handleNavLinkClick(link.href);
                   }
                 }}
-                className="text-sml-light text-xs font-medium tracking-widest hover:text-sml-green-light transition-colors relative cursor-pointer after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green-light after:transition-all hover:after:w-full"
+                className="text-sml-dark text-xs font-bold tracking-widest hover:text-sml-green transition-colors relative cursor-pointer after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green after:transition-all hover:after:w-full"
               >
                 {link.name}
               </a>
@@ -202,7 +201,7 @@ export function Navbar({ onNavigate, currentPage }) {
 
             <button
               onClick={() => onNavigate('admin')}
-              className="text-sml-light text-xs font-medium tracking-widest hover:text-sml-green-light transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green-light after:transition-all hover:after:w-full"
+              className="text-sml-dark text-xs font-bold tracking-widest hover:text-sml-green transition-colors relative after:content-[''] after:absolute after:bottom-[-4px] after:left-0 after:w-0 after:h-[2px] after:bg-sml-green after:transition-all hover:after:w-full"
             >
               ADMIN
             </button>
@@ -211,10 +210,11 @@ export function Navbar({ onNavigate, currentPage }) {
               onClick={() =>
                 document.getElementById('agribot-trigger')?.click()
               }
-              className="flex items-center space-x-2 bg-sml-green-light text-sml-dark px-4 py-2 rounded-full text-xs font-bold hover:bg-white transition-colors shadow-[0_0_15px_rgba(76,175,80,0.3)] animate-pulse"
+              className="flex items-center space-x-2 bg-sml-green text-white px-5 py-2.5 rounded-full text-xs font-bold hover:bg-sml-green-light transition-all duration-300 shadow-glow relative overflow-hidden group"
             >
-              <span>AGRI BOT</span>
-              <Sparkles className="w-3 h-3" />
+              <span className="relative z-10 transition-transform group-hover:translate-x-1">AGRI BOT</span>
+              <Sparkles className="w-3 h-3 relative z-10 text-sml-amber" />
+              <div className="absolute inset-0 bg-gradient-to-r from-sml-green-light to-sml-green opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
           </div>
 
@@ -222,7 +222,7 @@ export function Navbar({ onNavigate, currentPage }) {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-sml-cream hover:text-sml-green-light transition-colors"
+              className="text-sml-dark hover:text-sml-green transition-colors"
             >
               {isOpen ? (
                 <X className="w-6 h-6" />

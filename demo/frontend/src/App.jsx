@@ -1,25 +1,76 @@
-import React, { useEffect, useState } from 'react';
-import { Navbar } from './components/Navbar';
+import { useEffect, useState } from 'react';
+import { AboutSection } from './components/AboutSection';
+import { AgriBotChat } from './components/AgriBotChat';
+import { ContactSection } from './components/ContactSection';
+import { FactoryTour } from './components/FactoryTour';
+import { Footer } from './components/Footer';
 import { HeroSection } from './components/HeroSection';
-import { ProductsSection } from './components/ProductsSection';
+import { Navbar } from './components/Navbar';
 import { ProductCatalog } from './components/ProductCatalog';
 import { ProductCustomization } from './components/ProductCustomization';
-import { AboutSection } from './components/AboutSection';
-import { FactoryTour } from './components/FactoryTour';
-import { ContactSection } from './components/ContactSection';
-import { Footer } from './components/Footer';
-import { AgriBotChat } from './components/AgriBotChat';
+import { ProductDetailPage } from './components/ProductDetailPage';
+import { ProductsSection } from './components/ProductsSection';
 
-import { InquiryPage } from './components/InquiryPage';
 import { AdminLayout } from './admin/AdminLayout';
+import { InquiryPage } from './components/InquiryPage';
+
+const PAGE_TO_PATH = {
+  home: '/',
+  catalog: '/catalog',
+  customize: '/customize',
+  product: '/product',
+  inquiry: '/inquiry',
+  admin: '/admin',
+};
+
+const PATH_TO_PAGE = {
+  '/': 'home',
+  '/catalog': 'catalog',
+  '/customize': 'customize',
+  '/product': 'product',
+  '/inquiry': 'inquiry',
+  '/admin': 'admin',
+};
+
+const resolvePageFromPath = (path) => PATH_TO_PAGE[path] || 'home';
+
+const applyRouteState = (setCurrentPage, setCustomizationData, path, state = null) => {
+  const page = resolvePageFromPath(path);
+  setCurrentPage(page);
+
+  const routedData = state?.data || null;
+  if (page === 'product' || page === 'inquiry') {
+    setCustomizationData(routedData);
+  } else {
+    setCustomizationData(null);
+  }
+
+  if (page === 'home' && window.location.hash) {
+    const id = window.location.hash.substring(1);
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    }, 300);
+  }
+};
 
 export function App() {
   const [currentPage, setCurrentPage] = useState('home');
   const [customizationData, setCustomizationData] = useState(null);
 
-  const navigate = (page, data = null) => {
+  const navigate = (page, data = null, options = {}) => {
+    const { replace = false } = options;
+    const path = PAGE_TO_PATH[page] || '/';
+
     if (data) setCustomizationData(data);
-    else if (page !== 'inquiry') setCustomizationData(null);
+    else if (page !== 'inquiry' && page !== 'product') setCustomizationData(null);
+
+    const state = { page, data };
+    if (replace) {
+      window.history.replaceState(state, '', path);
+    } else {
+      window.history.pushState(state, '', path);
+    }
 
     setCurrentPage(page);
     window.scrollTo({
@@ -29,35 +80,14 @@ export function App() {
   };
 
   useEffect(() => {
-    const handleHash = () => {
-      const hash = window.location.hash;
-      const path = window.location.pathname;
+    applyRouteState(setCurrentPage, setCustomizationData, window.location.pathname, window.history.state);
 
-      if (path === '/admin') {
-        window.history.pushState(null, '', '/#/admin');
-        setCurrentPage('admin');
-        return;
-      }
-
-      if (hash === '#inquiry') {
-        setCurrentPage('inquiry');
-      } else if (hash === '#/admin') {
-        setCurrentPage('admin');
-      } else if (hash) {
-        const id = hash.substring(1);
-        setTimeout(() => {
-          const el = document.getElementById(id);
-          if (el) el.scrollIntoView({ behavior: 'smooth' });
-        }, 500);
-      }
+    const handlePopState = (event) => {
+      applyRouteState(setCurrentPage, setCustomizationData, window.location.pathname, event.state);
     };
 
-    // Initial check
-    handleHash();
-
-    // Listen for hash changes
-    window.addEventListener('hashchange', handleHash);
-    return () => window.removeEventListener('hashchange', handleHash);
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
   if (currentPage === 'admin') {
@@ -69,23 +99,31 @@ export function App() {
   }
 
   return (
-    <div className="min-h-screen bg-sml-cream font-sans text-sml-text selection:bg-sml-green selection:text-white">
+    <div className="min-h-screen bg-sml-cream font-sans text-sml-text selection:bg-sml-green selection:text-white relative overflow-x-hidden selection-glass">
+      {/* Global Mesh Gradient Background */}
+      <div className="fixed inset-0 pointer-events-none z-0 bg-mesh-gradient opacity-60" />
+
+      {/* Decorative Blur Orbs for premium feel */}
+      <div className="fixed top-[-10%] right-[-5%] w-[40vw] h-[40vw] rounded-full bg-sml-amber/10 blur-[100px] pointer-events-none z-[1]" />
+      <div className="fixed bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-sml-green/5 blur-[120px] pointer-events-none z-[1]" />
+
       {/* Background image for navbar and hero - fixed to viewport */}
       {currentPage === 'home' && (
         <div
-          className="fixed inset-0 pointer-events-none z-0"
+          className="fixed inset-0 pointer-events-none z-[2]"
           style={{
             backgroundImage: 'url("/coconut-plantation-21901848.webp")',
             backgroundPosition: 'center',
             backgroundSize: 'cover',
             backgroundAttachment: 'fixed',
-            opacity: 0.20,
-            zIndex: 0,
+            opacity: 0.08,
+            mixBlendMode: 'multiply',
           }}
         />
       )}
 
-      <Navbar onNavigate={navigate} currentPage={currentPage} />
+      <div className="relative z-10 font-sans">
+        <Navbar onNavigate={navigate} currentPage={currentPage} />
 
       {currentPage === 'home' &&
         <main className="relative z-10">
@@ -109,8 +147,15 @@ export function App() {
         </main>
       }
 
+      {currentPage === 'product' &&
+        <main className="pt-20">
+          <ProductDetailPage onNavigate={navigate} product={customizationData} />
+        </main>
+      }
+
       <Footer />
       <AgriBotChat />
+      </div>
     </div>);
 
 }

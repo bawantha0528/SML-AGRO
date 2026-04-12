@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
 import {
+    Bell,
     LayoutDashboard,
+    LogOut,
+    Menu,
     MessageSquare,
     Package,
-    Users,
-    LogOut,
-    Menu
+    Shield,
+    SwatchBook,
+    Users
 } from 'lucide-react';
-import { LoginPage } from './pages/LoginPage';
+import { useState } from 'react';
+import { CustomOrdersPage } from './pages/CustomOrdersPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { InquiriesPage } from './pages/InquiriesPage';
+import { LoginPage } from './pages/LoginPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { UsersPage } from './pages/UsersPage';
 
@@ -41,6 +45,7 @@ export function AdminLayout() {
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
         { id: 'products', label: 'Products', icon: Package },
+        { id: 'customOrders', label: 'Custom Inquiries', icon: SwatchBook },
         { id: 'users', label: 'Users', icon: Users },
     ];
 
@@ -55,16 +60,19 @@ export function AdminLayout() {
             case 'dashboard': return <DashboardPage />;
             case 'inquiries': return <InquiriesPage />;
             case 'products': return <ProductsPage />;
+            case 'customOrders': return <CustomOrdersPage />;
             case 'users': return <UsersPage />;
             default: return <DashboardPage />;
         }
     };
 
+    const activeLabel = menuItems.find((m) => m.id === activeTab)?.label || 'Dashboard';
+
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
+        <div className="flex h-screen bg-sml-cream overflow-hidden font-sans">
             {/* Sidebar */}
             <aside
-                className={`bg-sml-dark text-white flex flex-col transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'
+                className={`bg-sml-dark text-white flex flex-col transition-all duration-300 border-r border-white/10 ${sidebarOpen ? 'w-64' : 'w-20'
                     }`}
             >
                 <div className="h-16 flex items-center justify-center border-b border-gray-700">
@@ -75,14 +83,14 @@ export function AdminLayout() {
                     )}
                 </div>
 
-                <nav className="flex-1 py-6 space-y-2">
+                <nav className="flex-1 py-6 space-y-2 px-2">
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
                             onClick={() => setActiveTab(item.id)}
-                            className={`w-full flex items-center px-6 py-3 transition-colors ${activeTab === item.id
-                                ? 'bg-sml-green text-white border-r-4 border-white'
-                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                            className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${activeTab === item.id
+                                ? 'bg-sml-green text-white shadow-lg'
+                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                                 }`}
                         >
                             <item.icon className="w-5 h-5 min-w-[20px]" />
@@ -105,7 +113,7 @@ export function AdminLayout() {
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Top Header */}
-                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10">
+                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10 border-b border-gray-100">
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 focus:outline-none"
@@ -113,7 +121,20 @@ export function AdminLayout() {
                         <Menu className="w-6 h-6" />
                     </button>
 
+                    <div className="hidden md:flex items-center gap-3 mr-auto ml-4">
+                        <div className="w-8 h-8 rounded-lg bg-sml-green/10 flex items-center justify-center text-sml-green">
+                            <Shield className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <p className="text-xs uppercase tracking-wider text-gray-400">Admin Workspace</p>
+                            <p className="text-sm font-semibold text-gray-800">{activeLabel}</p>
+                        </div>
+                    </div>
+
                     <div className="flex items-center space-x-3">
+                        <button className="hidden sm:inline-flex w-9 h-9 rounded-lg border border-gray-200 items-center justify-center text-gray-500 hover:bg-gray-50">
+                            <Bell className="w-4 h-4" />
+                        </button>
                         <div className="text-right hidden sm:block">
                             <p className="text-sm font-bold text-gray-800">{user?.username}</p>
                             <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
@@ -134,7 +155,7 @@ export function AdminLayout() {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-auto p-6 md:p-8">
+                <main className="flex-1 overflow-auto p-6 md:p-8 bg-gradient-to-br from-[#f7f4ee] to-[#f2ebde]">
                     {renderContent()}
                 </main>
             </div>

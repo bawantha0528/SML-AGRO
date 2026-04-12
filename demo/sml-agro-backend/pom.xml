@@ -14,7 +14,7 @@
 	<name>sml-agro-backend</name>
 	<description>SML Agro Backend Project</description>
 	<properties>
-		<java.version>21</java.version>
+		<java.version>17</java.version>
 	</properties>
 	<dependencies>
 		<dependency>

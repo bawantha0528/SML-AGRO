@@ -1,10 +1,19 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import {
-    Search, Filter, RefreshCw, ChevronDown, X,
-    AlertTriangle, Clock, CheckCircle2, MessageSquare,
-    FileText, User, Building, Globe, Phone, Mail,
-    Package, Loader2, Tag
+    AlertTriangle,
+    Building,
+    FileText,
+    Globe,
+    Loader2,
+    Mail,
+    MessageSquare,
+    Package,
+    Phone,
+    RefreshCw,
+    Search,
+    Tag,
+    X
 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
 
 // ── Status config (OCP: add new statuses here without changing components) ──
 const STATUS_CONFIG = {
@@ -282,6 +291,10 @@ export function InquiriesPage() {
         filterCounts[s] = s === 'ALL' ? inquiries.length : inquiries.filter(i => i.status === s).length;
     });
 
+    const totalNew = inquiries.filter((i) => i.status === 'NEW').length;
+    const totalQuoted = inquiries.filter((i) => i.status === 'QUOTED').length;
+    const totalClosed = inquiries.filter((i) => i.status === 'CLOSED').length;
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -297,6 +310,25 @@ export function InquiriesPage() {
                     <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                     Refresh
                 </button>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wider text-gray-500">Total</p>
+                    <p className="text-2xl font-bold text-gray-900 mt-1">{inquiries.length}</p>
+                </div>
+                <div className="bg-white border border-blue-100 rounded-xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wider text-blue-500">New</p>
+                    <p className="text-2xl font-bold text-blue-700 mt-1">{totalNew}</p>
+                </div>
+                <div className="bg-white border border-purple-100 rounded-xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wider text-purple-500">Quoted</p>
+                    <p className="text-2xl font-bold text-purple-700 mt-1">{totalQuoted}</p>
+                </div>
+                <div className="bg-white border border-green-100 rounded-xl p-4 shadow-sm">
+                    <p className="text-xs uppercase tracking-wider text-green-500">Closed</p>
+                    <p className="text-2xl font-bold text-green-700 mt-1">{totalClosed}</p>
+                </div>
             </div>
 
             {/* Search */}
@@ -362,7 +394,7 @@ export function InquiriesPage() {
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
-                        <table className="w-full text-left text-sm">
+                        <table className="w-full text-left text-sm admin-table">
                             <thead className="bg-gray-50 text-gray-500 font-semibold uppercase text-xs border-b border-gray-100">
                                 <tr>
                                     <th className="px-5 py-3.5">Inquiry #</th>
