@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock, Download, Loader2, RefreshCw, TrendingUp, Users, X } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CalendarDays, CheckCircle2, Clock, Download, Loader2, RefreshCw, TrendingUp, Users, X } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import {
     Bar,
@@ -90,6 +90,9 @@ export function DashboardPage() {
                 newTodayChangePct: 0,
                 conversionRateChangePct: 0,
                 avgResponseHoursChangePct: 0,
+                pendingFollowups: 0,
+                overdueFollowups: 0,
+                todaysFollowups: [],
                 weeklyTrend: [
                     { name: 'Week 1', inquiries: 0 }, { name: 'Week 2', inquiries: 0 },
                     { name: 'Week 3', inquiries: 0 }, { name: 'Week 4', inquiries: 0 }
@@ -362,6 +365,54 @@ export function DashboardPage() {
                         </div>
                     </button>
                 ))}
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                <div className="flex items-center justify-between gap-3 flex-wrap mb-4">
+                    <h3 className="text-base font-bold text-gray-800 flex items-center gap-2">
+                        <CalendarDays className="w-4 h-4 text-sml-green" />
+                        Today's Follow-Ups
+                    </h3>
+                    <div className="flex items-center gap-2 text-xs">
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-amber-100 text-amber-700 font-semibold">
+                            Pending: {stats.pendingFollowups ?? 0}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-1 rounded-full bg-red-100 text-red-700 font-semibold">
+                            Overdue: {stats.overdueFollowups ?? 0}
+                        </span>
+                    </div>
+                </div>
+
+                {Array.isArray(stats.todaysFollowups) && stats.todaysFollowups.length > 0 ? (
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left text-gray-600">
+                            <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                                <tr>
+                                    <th className="px-4 py-3">Inquiry #</th>
+                                    <th className="px-4 py-3">Customer</th>
+                                    <th className="px-4 py-3">Email</th>
+                                    <th className="px-4 py-3">Priority</th>
+                                    <th className="px-4 py-3">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {stats.todaysFollowups.map((item) => (
+                                    <tr key={item.id} className="hover:bg-gray-50">
+                                        <td className="px-4 py-3 font-semibold text-gray-800">{item.inquiryNumber}</td>
+                                        <td className="px-4 py-3">{item.customerName}</td>
+                                        <td className="px-4 py-3">{item.email}</td>
+                                        <td className="px-4 py-3">{item.priority || '-'}</td>
+                                        <td className="px-4 py-3">{item.status || '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                ) : (
+                    <div className="text-sm text-gray-500 py-6 text-center">
+                        No follow-ups scheduled for today.
+                    </div>
+                )}
             </div>
 
             {/* Charts Row */}

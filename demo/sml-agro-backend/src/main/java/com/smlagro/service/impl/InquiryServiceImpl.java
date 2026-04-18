@@ -126,6 +126,27 @@ public class InquiryServiceImpl implements InquiryService {
     }
 
     @Override
+    public InquiryResponse scheduleFollowup(Long id, LocalDate followupDate) {
+        if (followupDate == null) {
+            throw new IllegalArgumentException("followupDate is required");
+        }
+        Inquiry inquiry = findOrThrow(id);
+        inquiry.setFollowupDate(followupDate);
+        inquiry.setFollowupCompletedAt(null);
+        if (inquiry.getStatus() == InquiryStatus.NEW || inquiry.getStatus() == InquiryStatus.RESPONDED) {
+            inquiry.setStatus(InquiryStatus.FOLLOWUP);
+        }
+        return InquiryResponse.fromEntity(inquiryRepository.save(inquiry));
+    }
+
+    @Override
+    public InquiryResponse markFollowupCompleted(Long id) {
+        Inquiry inquiry = findOrThrow(id);
+        inquiry.setFollowupCompletedAt(LocalDateTime.now());
+        return InquiryResponse.fromEntity(inquiryRepository.save(inquiry));
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public DashboardStatsResponse getDashboardStats() {
         DashboardStatsResponse stats = new DashboardStatsResponse();
@@ -183,6 +204,28 @@ public class InquiryServiceImpl implements InquiryService {
         double previousAvgResponseHours = calculateAverageResponseHours(previous30Days);
         stats.setAvgResponseHours(currentAvgResponseHours);
         stats.setAvgResponseHoursChangePct(calculatePercentChange(currentAvgResponseHours, previousAvgResponseHours));
+
+        LocalDate today = LocalDate.now();
+        stats.setPendingFollowups(inquiryRepository.countByFollowupDateIsNotNullAndFollowupCompletedAtIsNull());
+        stats.setOverdueFollowups(inquiryRepository.countByFollowupDateBeforeAndFollowupCompletedAtIsNull(today));
+
+        List<Map<String, Object>> todaysFollowups = inquiryRepository
+            .findByFollowupDateAndFollowupCompletedAtIsNullOrderByPriorityDescCreatedAtDesc(today)
+            .stream()
+            .limit(20)
+            .map(inquiry -> {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("id", inquiry.getId());
+                row.put("inquiryNumber", inquiry.getInquiryNumber());
+                row.put("customerName", inquiry.getCustomerName());
+                row.put("email", inquiry.getEmail());
+                row.put("priority", inquiry.getPriority() == null ? null : inquiry.getPriority().name());
+                row.put("followupDate", inquiry.getFollowupDate() == null ? null : inquiry.getFollowupDate().toString());
+                row.put("status", inquiry.getStatus() == null ? null : inquiry.getStatus().name());
+                return row;
+            })
+            .toList();
+        stats.setTodaysFollowups(todaysFollowups);
 
         // Weekly trend (last 8 weeks)
         LocalDateTime eightWeeksAgo = LocalDateTime.now().minusWeeks(8);

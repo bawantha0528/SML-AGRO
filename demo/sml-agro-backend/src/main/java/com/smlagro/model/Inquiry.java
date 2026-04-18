@@ -63,6 +63,9 @@ public class Inquiry {
     @Column(name = "followup_date")
     private LocalDate followupDate;
 
+    @Column(name = "followup_completed_at")
+    private LocalDateTime followupCompletedAt;
+
     @Column(columnDefinition = "TEXT")
     private String notes;
 
@@ -212,6 +215,14 @@ public class Inquiry {
 
     public void setFollowupDate(LocalDate followupDate) {
         this.followupDate = followupDate;
+    }
+
+    public LocalDateTime getFollowupCompletedAt() {
+        return followupCompletedAt;
+    }
+
+    public void setFollowupCompletedAt(LocalDateTime followupCompletedAt) {
+        this.followupCompletedAt = followupCompletedAt;
     }
 
     public String getNotes() {

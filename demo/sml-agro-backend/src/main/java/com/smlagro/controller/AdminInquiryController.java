@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -111,6 +112,53 @@ public class AdminInquiryController {
         try {
             InquiryResponse updated = inquiryService.updateNotes(id, body.get("notes"));
             return ResponseEntity.ok(ApiResponse.ok("Notes saved", updated));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * PATCH /api/admin/inquiries/{id}/followup-date
+     * Body: { "followupDate": "2026-04-20" }
+     */
+    @PatchMapping("/{id}/followup-date")
+    public ResponseEntity<ApiResponse<InquiryResponse>> updateFollowupDate(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        try {
+            String followupDate = body.get("followupDate");
+            if (followupDate == null || followupDate.isBlank()) {
+                return ResponseEntity.badRequest().body(ApiResponse.error("followupDate is required"));
+            }
+            LocalDate date = LocalDate.parse(followupDate);
+            InquiryResponse updated = inquiryService.scheduleFollowup(id, date);
+            return ResponseEntity.ok(ApiResponse.ok("Follow-up date saved", updated));
+        } catch (java.time.format.DateTimeParseException | IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error("Invalid follow-up date. Use yyyy-MM-dd"));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
+        }
+    }
+
+    /**
+     * PATCH /api/admin/inquiries/{id}/followup-reschedule
+     * Body: { "followupDate": "2026-04-25" }
+     */
+    @PatchMapping("/{id}/followup-reschedule")
+    public ResponseEntity<ApiResponse<InquiryResponse>> rescheduleFollowup(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> body) {
+        return updateFollowupDate(id, body);
+    }
+
+    /**
+     * PATCH /api/admin/inquiries/{id}/followup-complete
+     */
+    @PatchMapping("/{id}/followup-complete")
+    public ResponseEntity<ApiResponse<InquiryResponse>> markFollowupCompleted(@PathVariable Long id) {
+        try {
+            InquiryResponse updated = inquiryService.markFollowupCompleted(id);
+            return ResponseEntity.ok(ApiResponse.ok("Follow-up marked as completed", updated));
         } catch (RuntimeException e) {
             return ResponseEntity.status(404).body(ApiResponse.error(e.getMessage()));
         }

@@ -1,6 +1,7 @@
 package com.smlagro.repository;
 
 import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -26,6 +27,12 @@ public interface InquiryRepository extends JpaRepository<Inquiry, Long> {
         long countByStatus(InquiryStatus status);
 
         long countByCreatedAtAfter(LocalDateTime dateTime);
+
+        long countByFollowupDateIsNotNullAndFollowupCompletedAtIsNull();
+
+        long countByFollowupDateBeforeAndFollowupCompletedAtIsNull(LocalDate date);
+
+        List<Inquiry> findByFollowupDateAndFollowupCompletedAtIsNullOrderByPriorityDescCreatedAtDesc(LocalDate date);
 
         // Full-text search across customer name, email, company, country
         @Query("SELECT i FROM Inquiry i WHERE " +
