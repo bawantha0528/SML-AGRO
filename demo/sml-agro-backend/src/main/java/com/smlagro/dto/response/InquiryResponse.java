@@ -1,11 +1,11 @@
 package com.smlagro.dto.response;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import com.smlagro.model.Inquiry;
 import com.smlagro.model.InquiryStatus;
 import com.smlagro.model.Priority;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class InquiryResponse {
 
