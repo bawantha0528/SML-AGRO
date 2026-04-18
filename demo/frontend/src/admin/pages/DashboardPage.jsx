@@ -41,6 +41,11 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 export function DashboardPage() {
+    const today = new Date();
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(today.getDate() - 29);
+    const toIsoDate = (date) => date.toISOString().slice(0, 10);
+
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
     const [refreshing, setRefreshing] = useState(false);
@@ -51,6 +56,13 @@ export function DashboardPage() {
     const [trendGranularity, setTrendGranularity] = useState('daily');
     const [trendData, setTrendData] = useState([]);
     const [trendLoading, setTrendLoading] = useState(true);
+    const [countryFromDate, setCountryFromDate] = useState(() => toIsoDate(thirtyDaysAgo));
+    const [countryToDate, setCountryToDate] = useState(() => toIsoDate(today));
+    const [countryBreakdown, setCountryBreakdown] = useState([]);
+    const [countryBreakdownLoading, setCountryBreakdownLoading] = useState(true);
+    const [countryDetailsName, setCountryDetailsName] = useState(null);
+    const [countryDetailsList, setCountryDetailsList] = useState([]);
+    const [countryDetailsLoading, setCountryDetailsLoading] = useState(false);
     const trendChartRef = useRef(null);
 
     const fetchStats = async (showLoader = true) => {
@@ -126,6 +138,69 @@ export function DashboardPage() {
         }
     };
 
+    const fetchCountryBreakdown = async (showLoader = true) => {
+        if (showLoader) {
+            setCountryBreakdownLoading(true);
+        }
+        try {
+            const params = new URLSearchParams();
+            if (countryFromDate) params.set('fromDate', countryFromDate);
+            if (countryToDate) params.set('toDate', countryToDate);
+
+            const response = await fetch(`/api/admin/dashboard/country-breakdown?${params.toString()}`);
+            if (!response.ok) throw new Error('Failed to load country breakdown');
+            const json = await response.json();
+            setCountryBreakdown(Array.isArray(json.data) ? json.data : []);
+        } catch {
+            setCountryBreakdown([]);
+        } finally {
+            if (showLoader) {
+                setCountryBreakdownLoading(false);
+            }
+        }
+    };
+
+    const fetchCountryDetails = async (countryName) => {
+        setCountryDetailsName(countryName);
+        setCountryDetailsLoading(true);
+        try {
+            const params = new URLSearchParams({ country: countryName });
+            if (countryFromDate) params.set('fromDate', countryFromDate);
+            if (countryToDate) params.set('toDate', countryToDate);
+
+            const response = await fetch(`/api/admin/dashboard/country-details?${params.toString()}`);
+            if (!response.ok) throw new Error('Failed to load country details');
+            const json = await response.json();
+            setCountryDetailsList(Array.isArray(json.data) ? json.data : []);
+        } catch {
+            setCountryDetailsList([]);
+        } finally {
+            setCountryDetailsLoading(false);
+        }
+    };
+
+    const exportCountryBreakdownCsv = () => {
+        const header = ['Country', 'Inquiries', 'Percentage', 'FromDate', 'ToDate'];
+        const rows = countryBreakdown.map((row) => [
+            row.name,
+            row.value,
+            `${row.percentage ?? 0}%`,
+            countryFromDate,
+            countryToDate,
+        ]);
+        const csv = [header, ...rows]
+            .map((line) => line.map((value) => `"${String(value ?? '').replace(/"/g, '""')}"`).join(','))
+            .join('\n');
+
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const anchor = document.createElement('a');
+        anchor.href = url;
+        anchor.download = `country-inquiries-${countryFromDate}-to-${countryToDate}.csv`;
+        anchor.click();
+        URL.revokeObjectURL(url);
+    };
+
     const exportTrendAsPng = () => {
         const container = trendChartRef.current;
         const svg = container?.querySelector('svg');
@@ -172,9 +247,11 @@ export function DashboardPage() {
     useEffect(() => {
         fetchStats(true);
         fetchTrendData('daily', true);
+        fetchCountryBreakdown(true);
         const intervalId = setInterval(() => {
             fetchStats(false);
             fetchTrendData(trendGranularity, false);
+            fetchCountryBreakdown(false);
         }, 5 * 60 * 1000);
         return () => clearInterval(intervalId);
     }, []);
@@ -182,6 +259,10 @@ export function DashboardPage() {
     useEffect(() => {
         fetchTrendData(trendGranularity, true);
     }, [trendGranularity]);
+
+    useEffect(() => {
+        fetchCountryBreakdown(true);
+    }, [countryFromDate, countryToDate]);
 
     if (loading) {
         return (
@@ -245,6 +326,7 @@ export function DashboardPage() {
                     onClick={() => {
                         fetchStats(false);
                         fetchTrendData(trendGranularity, false);
+                        fetchCountryBreakdown(false);
                     }}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                 >
@@ -349,33 +431,97 @@ export function DashboardPage() {
 
                 {/* Pie chart — by country */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-base font-bold text-gray-800 mb-5">Inquiries by Country</h3>
+                    <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+                        <h3 className="text-base font-bold text-gray-800">Top Countries (Inquiries)</h3>
+                        <button
+                            onClick={exportCountryBreakdownCsv}
+                            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                        >
+                            <Download className="w-3.5 h-3.5" /> Export CSV
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                        <label className="text-xs text-gray-500">
+                            From
+                            <input
+                                type="date"
+                                value={countryFromDate}
+                                onChange={(event) => setCountryFromDate(event.target.value)}
+                                className="mt-1 block w-full border border-gray-200 rounded-lg px-2.5 py-2 text-sm text-gray-700"
+                            />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            To
+                            <input
+                                type="date"
+                                value={countryToDate}
+                                onChange={(event) => setCountryToDate(event.target.value)}
+                                className="mt-1 block w-full border border-gray-200 rounded-lg px-2.5 py-2 text-sm text-gray-700"
+                            />
+                        </label>
+                    </div>
+
                     <div className="h-64">
-                        {stats.countryBreakdown.length > 0 ? (
+                        {countryBreakdownLoading ? (
+                            <div className="h-full flex items-center justify-center text-gray-400 gap-2">
+                                <Loader2 className="w-5 h-5 animate-spin text-sml-green" />
+                                <span className="text-sm">Loading country data...</span>
+                            </div>
+                        ) : countryBreakdown.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%" minHeight={240}>
                                 <PieChart>
                                     <Pie
-                                        data={stats.countryBreakdown}
-                                        cx="50%" cy="50%"
+                                        data={countryBreakdown}
+                                        cx="50%"
+                                        cy="50%"
                                         outerRadius={90}
                                         dataKey="value"
-                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        label={({ name, payload }) => `${name} ${payload?.percentage ?? 0}%`}
                                         labelLine={false}
+                                        onClick={(entry) => {
+                                            if (entry?.name) {
+                                                fetchCountryDetails(entry.name);
+                                            }
+                                        }}
                                     >
-                                        {stats.countryBreakdown.map((_, index) => (
+                                        {countryBreakdown.map((_, index) => (
                                             <Cell key={index} fill={COLORS[index % COLORS.length]} />
                                         ))}
                                     </Pie>
-                                    <Tooltip content={<CustomTooltip />} />
+                                    <Tooltip
+                                        formatter={(value, name, item) => {
+                                            const pct = item?.payload?.percentage ?? 0;
+                                            return [`${value} (${pct}%)`, name];
+                                        }}
+                                    />
                                     <Legend wrapperStyle={{ fontSize: '12px' }} />
                                 </PieChart>
                             </ResponsiveContainer>
                         ) : (
                             <div className="h-full flex items-center justify-center text-gray-300 text-sm">
-                                No country data yet
+                                No country data for selected dates
                             </div>
                         )}
                     </div>
+
+                    {countryBreakdown.length > 0 && (
+                        <div className="mt-3 grid grid-cols-1 gap-1">
+                            {countryBreakdown.map((row, idx) => (
+                                <button
+                                    key={row.name}
+                                    onClick={() => fetchCountryDetails(row.name)}
+                                    className="text-left text-xs px-2 py-1.5 rounded-md hover:bg-gray-50 flex items-center justify-between"
+                                >
+                                    <span className="flex items-center gap-2 text-gray-600">
+                                        <span className="inline-block w-2.5 h-2.5 rounded-full" style={{ backgroundColor: COLORS[idx % COLORS.length] }} />
+                                        {row.name}
+                                    </span>
+                                    <span className="text-gray-500">{row.value} ({row.percentage}%)</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 
@@ -464,6 +610,59 @@ export function DashboardPage() {
                                                             {item.status}
                                                         </span>
                                                     </td>
+                                                    <td className="px-4 py-3">{item.createdAt ? new Date(item.createdAt).toLocaleString() : '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {countryDetailsName && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8 border border-gray-100">
+                        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-800">
+                                Inquiries from {countryDetailsName}
+                            </h3>
+                            <button
+                                onClick={() => setCountryDetailsName(null)}
+                                className="text-gray-400 hover:text-gray-700"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+                        <div className="p-6">
+                            {countryDetailsLoading ? (
+                                <div className="flex items-center justify-center h-40 gap-2 text-gray-400">
+                                    <Loader2 className="w-5 h-5 animate-spin text-sml-green" />
+                                    <span>Loading country inquiries...</span>
+                                </div>
+                            ) : countryDetailsList.length === 0 ? (
+                                <div className="text-center py-14 text-gray-400">No inquiries found for this country.</div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm text-left text-gray-600">
+                                        <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                                            <tr>
+                                                <th className="px-4 py-3">Inquiry #</th>
+                                                <th className="px-4 py-3">Customer</th>
+                                                <th className="px-4 py-3">Email</th>
+                                                <th className="px-4 py-3">Country</th>
+                                                <th className="px-4 py-3">Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {countryDetailsList.map((item) => (
+                                                <tr key={item.id} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-3 font-semibold text-gray-800">{item.inquiryNumber}</td>
+                                                    <td className="px-4 py-3">{item.customerName}</td>
+                                                    <td className="px-4 py-3">{item.email}</td>
+                                                    <td className="px-4 py-3">{item.country || 'Unknown'}</td>
                                                     <td className="px-4 py-3">{item.createdAt ? new Date(item.createdAt).toLocaleString() : '-'}</td>
                                                 </tr>
                                             ))}
