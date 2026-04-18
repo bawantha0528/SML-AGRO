@@ -13,6 +13,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -281,6 +282,94 @@ public class InquiryServiceImpl implements InquiryService {
         return buildMonthlyTrendRange(source, startDate, endDate);
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getCountryBreakdown(LocalDate fromDate, LocalDate toDate) {
+        LocalDate start = fromDate == null ? LocalDate.now().minusDays(29) : fromDate;
+        LocalDate end = toDate == null ? LocalDate.now() : toDate;
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
+
+        List<Inquiry> filtered = filterInquiriesByDateRange(start, end);
+        Map<String, Long> counts = filtered.stream()
+                .collect(Collectors.groupingBy(i -> normalizeCountry(i.getCountry()), Collectors.counting()));
+
+        List<Map.Entry<String, Long>> sorted = counts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .toList();
+
+        long total = sorted.stream().mapToLong(Map.Entry::getValue).sum();
+        List<Map<String, Object>> output = new ArrayList<>();
+        long otherCount = 0L;
+
+        for (int i = 0; i < sorted.size(); i++) {
+            Map.Entry<String, Long> entry = sorted.get(i);
+            if (i < 5) {
+                Map<String, Object> row = new LinkedHashMap<>();
+                row.put("name", entry.getKey());
+                row.put("value", entry.getValue());
+                row.put("percentage", total == 0 ? 0.0 : roundOneDecimal(entry.getValue() * 100.0 / total));
+                output.add(row);
+            } else {
+                otherCount += entry.getValue();
+            }
+        }
+
+        if (otherCount > 0) {
+            Map<String, Object> otherRow = new LinkedHashMap<>();
+            otherRow.put("name", "Other");
+            otherRow.put("value", otherCount);
+            otherRow.put("percentage", total == 0 ? 0.0 : roundOneDecimal(otherCount * 100.0 / total));
+            output.add(otherRow);
+        }
+
+        return output;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InquiryResponse> getCountryInquiryDetails(String country, LocalDate fromDate, LocalDate toDate) {
+        if (country == null || country.isBlank()) {
+            throw new IllegalArgumentException("country is required");
+        }
+
+        LocalDate start = fromDate == null ? LocalDate.now().minusDays(29) : fromDate;
+        LocalDate end = toDate == null ? LocalDate.now() : toDate;
+        if (start.isAfter(end)) {
+            throw new IllegalArgumentException("fromDate cannot be after toDate");
+        }
+
+        List<Inquiry> filtered = filterInquiriesByDateRange(start, end);
+        String normalizedCountry = normalizeCountry(country);
+
+        List<Inquiry> result;
+        if ("OTHER".equalsIgnoreCase(normalizedCountry)) {
+            Set<String> topFiveCountries = filtered.stream()
+                    .collect(Collectors.groupingBy(i -> normalizeCountry(i.getCountry()), Collectors.counting()))
+                    .entrySet()
+                    .stream()
+                    .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                    .limit(5)
+                    .map(Map.Entry::getKey)
+                    .collect(Collectors.toSet());
+
+            result = filtered.stream()
+                    .filter(i -> !topFiveCountries.contains(normalizeCountry(i.getCountry())))
+                    .sorted(Comparator.comparing(Inquiry::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .limit(300)
+                    .toList();
+        } else {
+            result = filtered.stream()
+                    .filter(i -> normalizeCountry(i.getCountry()).equalsIgnoreCase(normalizedCountry))
+                    .sorted(Comparator.comparing(Inquiry::getCreatedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                    .limit(300)
+                    .toList();
+        }
+
+        return result.stream().map(InquiryResponse::fromEntity).toList();
+    }
+
     // ===================== Private helpers =====================
 
     private Inquiry findOrThrow(Long id) {
@@ -378,6 +467,23 @@ public class InquiryServiceImpl implements InquiryService {
 
     private double roundOneDecimal(double value) {
         return Math.round(value * 10.0) / 10.0;
+    }
+
+    private List<Inquiry> filterInquiriesByDateRange(LocalDate start, LocalDate end) {
+        return inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(i -> i.getCreatedAt() != null)
+                .filter(i -> {
+                    LocalDate date = i.getCreatedAt().toLocalDate();
+                    return !date.isBefore(start) && !date.isAfter(end);
+                })
+                .toList();
+    }
+
+    private String normalizeCountry(String value) {
+        if (value == null || value.isBlank()) {
+            return "Unknown";
+        }
+        return value.trim();
     }
 
     private List<Map<String, Object>> buildDailyTrend(List<Inquiry> source, LocalDate startDate, LocalDate endDate) {

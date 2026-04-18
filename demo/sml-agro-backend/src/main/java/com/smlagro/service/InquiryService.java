@@ -1,5 +1,6 @@
 package com.smlagro.service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import com.smlagro.dto.request.InquiryRequest;
@@ -32,4 +33,8 @@ public interface InquiryService {
     List<InquiryResponse> getDashboardMetricDetails(String metric);
 
     List<java.util.Map<String, Object>> getInquiryTrend(String granularity, int days);
+
+    List<java.util.Map<String, Object>> getCountryBreakdown(LocalDate fromDate, LocalDate toDate);
+
+    List<InquiryResponse> getCountryInquiryDetails(String country, LocalDate fromDate, LocalDate toDate);
 }

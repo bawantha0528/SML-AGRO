@@ -1,5 +1,6 @@
 package com.smlagro.controller;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,6 +72,58 @@ public class AdminDashboardController {
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(ApiResponse.error("Failed to load trend data"));
+        }
+    }
+
+    /**
+     * GET /api/admin/dashboard/country-breakdown?fromDate=2026-04-01&toDate=2026-04-18
+     * Returns top 5 countries with percentage and an "Other" category.
+     */
+    @GetMapping("/country-breakdown")
+    public ResponseEntity<ApiResponse<List<java.util.Map<String, Object>>>> getCountryBreakdown(
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate) {
+        try {
+            LocalDate from = parseDateOrDefault(fromDate, LocalDate.now().minusDays(29));
+            LocalDate to = parseDateOrDefault(toDate, LocalDate.now());
+            List<java.util.Map<String, Object>> data = inquiryService.getCountryBreakdown(from, to);
+            return ResponseEntity.ok(ApiResponse.ok(data));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(ApiResponse.error("Failed to load country breakdown"));
+        }
+    }
+
+    /**
+     * GET /api/admin/dashboard/country-details?country=USA&fromDate=2026-04-01&toDate=2026-04-18
+     * Returns inquiries for one selected country segment.
+     */
+    @GetMapping("/country-details")
+    public ResponseEntity<ApiResponse<List<InquiryResponse>>> getCountryDetails(
+            @RequestParam String country,
+            @RequestParam(required = false) String fromDate,
+            @RequestParam(required = false) String toDate) {
+        try {
+            LocalDate from = parseDateOrDefault(fromDate, LocalDate.now().minusDays(29));
+            LocalDate to = parseDateOrDefault(toDate, LocalDate.now());
+            List<InquiryResponse> rows = inquiryService.getCountryInquiryDetails(country, from, to);
+            return ResponseEntity.ok(ApiResponse.ok(rows));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(ApiResponse.error("Failed to load country details"));
+        }
+    }
+
+    private LocalDate parseDateOrDefault(String value, LocalDate fallback) {
+        if (value == null || value.isBlank()) {
+            return fallback;
+        }
+        try {
+            return LocalDate.parse(value);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid date format. Use yyyy-MM-dd");
         }
     }
 }
