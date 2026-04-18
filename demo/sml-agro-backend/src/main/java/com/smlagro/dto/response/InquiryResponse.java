@@ -1,11 +1,11 @@
 package com.smlagro.dto.response;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 import com.smlagro.model.Inquiry;
 import com.smlagro.model.InquiryStatus;
 import com.smlagro.model.Priority;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public class InquiryResponse {
 
@@ -23,6 +23,7 @@ public class InquiryResponse {
     private Priority priority;
     private String assignedToUsername;
     private LocalDate followupDate;
+    private LocalDateTime followupCompletedAt;
     private String notes;
     private LocalDateTime createdAt;
     private LocalDateTime respondedAt;
@@ -48,6 +49,7 @@ public class InquiryResponse {
         r.setPriority(inquiry.getPriority());
         r.setAssignedToUsername(inquiry.getAssignedTo() != null ? inquiry.getAssignedTo().getUsername() : null);
         r.setFollowupDate(inquiry.getFollowupDate());
+        r.setFollowupCompletedAt(inquiry.getFollowupCompletedAt());
         r.setNotes(inquiry.getNotes());
         r.setCreatedAt(inquiry.getCreatedAt());
         r.setRespondedAt(inquiry.getRespondedAt());
@@ -166,6 +168,14 @@ public class InquiryResponse {
 
     public void setFollowupDate(LocalDate followupDate) {
         this.followupDate = followupDate;
+    }
+
+    public LocalDateTime getFollowupCompletedAt() {
+        return followupCompletedAt;
+    }
+
+    public void setFollowupCompletedAt(LocalDateTime followupCompletedAt) {
+        this.followupCompletedAt = followupCompletedAt;
     }
 
     public String getNotes() {

@@ -1,10 +1,22 @@
 package com.smlagro.model;
 
-import jakarta.persistence.*;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = "inquiries", indexes = {
@@ -62,6 +74,9 @@ public class Inquiry {
 
     @Column(name = "followup_date")
     private LocalDate followupDate;
+
+    @Column(name = "followup_completed_at")
+    private LocalDateTime followupCompletedAt;
 
     @Column(columnDefinition = "TEXT")
     private String notes;
@@ -212,6 +227,14 @@ public class Inquiry {
 
     public void setFollowupDate(LocalDate followupDate) {
         this.followupDate = followupDate;
+    }
+
+    public LocalDateTime getFollowupCompletedAt() {
+        return followupCompletedAt;
+    }
+
+    public void setFollowupCompletedAt(LocalDateTime followupCompletedAt) {
+        this.followupCompletedAt = followupCompletedAt;
     }
 
     public String getNotes() {

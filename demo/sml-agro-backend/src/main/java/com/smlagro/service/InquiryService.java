@@ -28,6 +28,10 @@ public interface InquiryService {
 
     InquiryResponse updateNotes(Long id, String notes);
 
+    InquiryResponse scheduleFollowup(Long id, LocalDate followupDate);
+
+    InquiryResponse markFollowupCompleted(Long id);
+
     DashboardStatsResponse getDashboardStats();
 
     List<InquiryResponse> getDashboardMetricDetails(String metric);

@@ -16,6 +16,9 @@ public class DashboardStatsResponse {
     private double newTodayChangePct;
     private double conversionRateChangePct;
     private double avgResponseHoursChangePct;
+    private long pendingFollowups;
+    private long overdueFollowups;
+    private List<Map<String, Object>> todaysFollowups;
     private List<Map<String, Object>> weeklyTrend;
     private List<Map<String, Object>> countryBreakdown;
     private List<Map<String, Object>> statusBreakdown;
@@ -109,6 +112,30 @@ public class DashboardStatsResponse {
 
     public void setAvgResponseHoursChangePct(double avgResponseHoursChangePct) {
         this.avgResponseHoursChangePct = avgResponseHoursChangePct;
+    }
+
+    public long getPendingFollowups() {
+        return pendingFollowups;
+    }
+
+    public void setPendingFollowups(long pendingFollowups) {
+        this.pendingFollowups = pendingFollowups;
+    }
+
+    public long getOverdueFollowups() {
+        return overdueFollowups;
+    }
+
+    public void setOverdueFollowups(long overdueFollowups) {
+        this.overdueFollowups = overdueFollowups;
+    }
+
+    public List<Map<String, Object>> getTodaysFollowups() {
+        return todaysFollowups;
+    }
+
+    public void setTodaysFollowups(List<Map<String, Object>> todaysFollowups) {
+        this.todaysFollowups = todaysFollowups;
     }
 
     public List<Map<String, Object>> getWeeklyTrend() {
