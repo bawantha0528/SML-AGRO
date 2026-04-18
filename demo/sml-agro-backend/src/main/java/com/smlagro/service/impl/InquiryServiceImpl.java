@@ -1,5 +1,24 @@
 package com.smlagro.service.impl;
 
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.smlagro.dto.request.InquiryRequest;
 import com.smlagro.dto.response.DashboardStatsResponse;
 import com.smlagro.dto.response.InquiryResponse;
@@ -9,15 +28,6 @@ import com.smlagro.model.Priority;
 import com.smlagro.repository.InquiryRepository;
 import com.smlagro.service.EmailService;
 import com.smlagro.service.InquiryService;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -241,6 +251,36 @@ public class InquiryServiceImpl implements InquiryService {
         return filtered.stream().map(InquiryResponse::fromEntity).toList();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<Map<String, Object>> getInquiryTrend(String granularity, int days) {
+        int normalizedDays = Math.max(1, Math.min(days, 365));
+        String normalizedGranularity = granularity == null ? "DAILY" : granularity.trim().toUpperCase(Locale.ROOT);
+
+        if (!List.of("DAILY", "WEEKLY", "MONTHLY").contains(normalizedGranularity)) {
+            throw new IllegalArgumentException("Unsupported granularity: " + granularity);
+        }
+
+        LocalDate endDate = LocalDate.now();
+        LocalDate startDate = endDate.minusDays(normalizedDays - 1L);
+
+        List<Inquiry> source = inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
+                .filter(i -> i.getCreatedAt() != null)
+                .filter(i -> {
+                    LocalDate date = i.getCreatedAt().toLocalDate();
+                    return !date.isBefore(startDate) && !date.isAfter(endDate);
+                })
+                .toList();
+
+        if ("DAILY".equals(normalizedGranularity)) {
+            return buildDailyTrend(source, startDate, endDate);
+        }
+        if ("WEEKLY".equals(normalizedGranularity)) {
+            return buildWeeklyTrendRange(source, startDate, endDate);
+        }
+        return buildMonthlyTrendRange(source, startDate, endDate);
+    }
+
     // ===================== Private helpers =====================
 
     private Inquiry findOrThrow(Long id) {
@@ -338,5 +378,63 @@ public class InquiryServiceImpl implements InquiryService {
 
     private double roundOneDecimal(double value) {
         return Math.round(value * 10.0) / 10.0;
+    }
+
+    private List<Map<String, Object>> buildDailyTrend(List<Inquiry> source, LocalDate startDate, LocalDate endDate) {
+        Map<LocalDate, Long> counts = source.stream()
+                .collect(Collectors.groupingBy(i -> i.getCreatedAt().toLocalDate(), Collectors.counting()));
+
+        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
+        List<Map<String, Object>> output = new ArrayList<>();
+        for (LocalDate day = startDate; !day.isAfter(endDate); day = day.plusDays(1)) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("label", day.format(labelFmt));
+            row.put("date", day.toString());
+            row.put("count", counts.getOrDefault(day, 0L));
+            output.add(row);
+        }
+        return output;
+    }
+
+    private List<Map<String, Object>> buildWeeklyTrendRange(List<Inquiry> source, LocalDate startDate, LocalDate endDate) {
+        Map<LocalDate, Long> counts = source.stream()
+                .collect(Collectors.groupingBy(
+                        i -> i.getCreatedAt().toLocalDate().with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY)),
+                        Collectors.counting()));
+
+        LocalDate firstWeek = startDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        LocalDate lastWeek = endDate.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("dd MMM", Locale.ENGLISH);
+
+        List<Map<String, Object>> output = new ArrayList<>();
+        for (LocalDate week = firstWeek; !week.isAfter(lastWeek); week = week.plusWeeks(1)) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("label", "Wk of " + week.format(labelFmt));
+            row.put("date", week.toString());
+            row.put("count", counts.getOrDefault(week, 0L));
+            output.add(row);
+        }
+        return output;
+    }
+
+    private List<Map<String, Object>> buildMonthlyTrendRange(List<Inquiry> source, LocalDate startDate, LocalDate endDate) {
+        Map<YearMonth, Long> counts = source.stream()
+                .collect(Collectors.groupingBy(
+                        i -> YearMonth.from(i.getCreatedAt().toLocalDate()),
+                        Collectors.counting()));
+
+        YearMonth startMonth = YearMonth.from(startDate);
+        YearMonth endMonth = YearMonth.from(endDate);
+        DateTimeFormatter labelFmt = DateTimeFormatter.ofPattern("MMM yyyy", Locale.ENGLISH);
+
+        List<Map<String, Object>> output = new ArrayList<>();
+        for (YearMonth current = startMonth; !current.isAfter(endMonth); current = current.plusMonths(1)) {
+            Map<String, Object> row = new LinkedHashMap<>();
+            row.put("label", current.format(labelFmt));
+            row.put("date", current.atDay(1).toString());
+            row.put("count", counts.getOrDefault(current, 0L));
+            output.add(row);
+        }
+        return output;
     }
 }

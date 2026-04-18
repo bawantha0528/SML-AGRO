@@ -1,5 +1,5 @@
-import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock, Loader2, RefreshCw, TrendingUp, Users, X } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock, Download, Loader2, RefreshCw, TrendingUp, Users, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import {
     Bar,
     BarChart,
@@ -21,6 +21,8 @@ const METRIC_DETAIL_TITLE = {
     CONVERSION_RATE: 'Quoted Inquiries',
     AVG_RESPONSE_TIME: 'Responded Inquiries',
 };
+
+const TREND_GRANULARITIES = ['daily', 'weekly', 'monthly'];
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -46,6 +48,10 @@ export function DashboardPage() {
     const [detailMetric, setDetailMetric] = useState(null);
     const [detailList, setDetailList] = useState([]);
     const [detailLoading, setDetailLoading] = useState(false);
+    const [trendGranularity, setTrendGranularity] = useState('daily');
+    const [trendData, setTrendData] = useState([]);
+    const [trendLoading, setTrendLoading] = useState(true);
+    const trendChartRef = useRef(null);
 
     const fetchStats = async (showLoader = true) => {
         if (showLoader) {
@@ -102,13 +108,80 @@ export function DashboardPage() {
         }
     };
 
+    const fetchTrendData = async (granularity, showLoader = true) => {
+        if (showLoader) {
+            setTrendLoading(true);
+        }
+        try {
+            const response = await fetch(`/api/admin/dashboard/trend?granularity=${encodeURIComponent(granularity)}&days=30`);
+            if (!response.ok) throw new Error('Failed to load trend data');
+            const json = await response.json();
+            setTrendData(Array.isArray(json.data) ? json.data : []);
+        } catch {
+            setTrendData([]);
+        } finally {
+            if (showLoader) {
+                setTrendLoading(false);
+            }
+        }
+    };
+
+    const exportTrendAsPng = () => {
+        const container = trendChartRef.current;
+        const svg = container?.querySelector('svg');
+        if (!svg) return;
+
+        const serializer = new XMLSerializer();
+        let source = serializer.serializeToString(svg);
+
+        if (!source.includes('xmlns="http://www.w3.org/2000/svg"')) {
+            source = source.replace('<svg', '<svg xmlns="http://www.w3.org/2000/svg"');
+        }
+
+        const rect = svg.getBoundingClientRect();
+        const width = Math.max(1200, Math.round(rect.width * 2));
+        const height = Math.max(700, Math.round(rect.height * 2));
+        const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' });
+        const url = URL.createObjectURL(svgBlob);
+        const image = new Image();
+
+        image.onload = () => {
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const context = canvas.getContext('2d');
+            if (!context) {
+                URL.revokeObjectURL(url);
+                return;
+            }
+
+            context.fillStyle = '#ffffff';
+            context.fillRect(0, 0, width, height);
+            context.drawImage(image, 0, 0, width, height);
+
+            const anchor = document.createElement('a');
+            anchor.download = `inquiry-trend-${trendGranularity}-${new Date().toISOString().slice(0, 10)}.png`;
+            anchor.href = canvas.toDataURL('image/png');
+            anchor.click();
+            URL.revokeObjectURL(url);
+        };
+
+        image.src = url;
+    };
+
     useEffect(() => {
         fetchStats(true);
+        fetchTrendData('daily', true);
         const intervalId = setInterval(() => {
             fetchStats(false);
+            fetchTrendData(trendGranularity, false);
         }, 5 * 60 * 1000);
         return () => clearInterval(intervalId);
     }, []);
+
+    useEffect(() => {
+        fetchTrendData(trendGranularity, true);
+    }, [trendGranularity]);
 
     if (loading) {
         return (
@@ -169,7 +242,10 @@ export function DashboardPage() {
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
                 <button
-                    onClick={() => fetchStats(false)}
+                    onClick={() => {
+                        fetchStats(false);
+                        fetchTrendData(trendGranularity, false);
+                    }}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                 >
                     <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
@@ -210,21 +286,64 @@ export function DashboardPage() {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Line chart — weekly trend */}
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                    <h3 className="text-base font-bold text-gray-800 mb-5">Inquiry Trend (Weekly)</h3>
-                    <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%" minHeight={240}>
-                            <LineChart data={stats.weeklyTrend}>
-                                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
-                                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} />
-                                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} />
-                                <Tooltip content={<CustomTooltip />} />
-                                <Line
-                                    type="monotone" dataKey="inquiries" stroke="#2E7D32"
-                                    strokeWidth={3} dot={{ r: 5, fill: '#2E7D32', strokeWidth: 0 }}
-                                    activeDot={{ r: 7, fill: '#2E7D32' }}
-                                />
-                            </LineChart>
-                        </ResponsiveContainer>
+                    <div className="flex items-center justify-between mb-5 gap-3 flex-wrap">
+                        <h3 className="text-base font-bold text-gray-800">Inquiry Trend (Last 30 Days)</h3>
+                        <div className="flex items-center gap-2">
+                            <div className="inline-flex rounded-lg border border-gray-200 overflow-hidden">
+                                {TREND_GRANULARITIES.map((granularity) => (
+                                    <button
+                                        key={granularity}
+                                        onClick={() => setTrendGranularity(granularity)}
+                                        className={`px-3 py-1.5 text-xs font-semibold uppercase tracking-wide transition-colors ${
+                                            trendGranularity === granularity
+                                                ? 'bg-sml-green text-white'
+                                                : 'bg-white text-gray-600 hover:bg-gray-50'
+                                        }`}
+                                    >
+                                        {granularity}
+                                    </button>
+                                ))}
+                            </div>
+                            <button
+                                onClick={exportTrendAsPng}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-50"
+                            >
+                                <Download className="w-3.5 h-3.5" /> Export PNG
+                            </button>
+                        </div>
+                    </div>
+                    <div className="h-64" ref={trendChartRef}>
+                        {trendLoading ? (
+                            <div className="h-full flex items-center justify-center text-gray-400 gap-2">
+                                <Loader2 className="w-5 h-5 animate-spin text-sml-green" />
+                                <span className="text-sm">Loading trend data...</span>
+                            </div>
+                        ) : (
+                            <ResponsiveContainer width="100%" height="100%" minHeight={240}>
+                                <LineChart data={trendData}>
+                                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
+                                    <XAxis dataKey="label" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} />
+                                    <YAxis allowDecimals={false} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} />
+                                    <Tooltip
+                                        formatter={(value) => [`${value}`, 'Inquiries']}
+                                        labelFormatter={(_, payload) => {
+                                            const point = payload && payload[0] ? payload[0].payload : null;
+                                            return point?.date ? `Date: ${point.date}` : 'Date: -';
+                                        }}
+                                        contentStyle={{ borderRadius: '8px', borderColor: '#e5e7eb' }}
+                                    />
+                                    <Line
+                                        type="monotone"
+                                        dataKey="count"
+                                        name="Inquiries"
+                                        stroke="#2E7D32"
+                                        strokeWidth={3}
+                                        dot={{ r: 3, fill: '#2E7D32', strokeWidth: 0 }}
+                                        activeDot={{ r: 6, fill: '#2E7D32' }}
+                                    />
+                                </LineChart>
+                            </ResponsiveContainer>
+                        )}
                     </div>
                 </div>
 
