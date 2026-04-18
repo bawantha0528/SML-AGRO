@@ -1,6 +1,7 @@
 package com.smlagro.service.impl;
 
 import com.smlagro.model.Inquiry;
+import com.smlagro.model.User;
 import com.smlagro.service.EmailService;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -76,6 +77,40 @@ public class EmailServiceImpl implements EmailService {
             logger.error("Failed to send confirmation email for inquiry: {}", inquiry.getInquiryNumber(), e);
         } catch (Exception e) {
             logger.error("Unexpected error while sending email", e);
+        }
+    }
+
+    @Override
+    @Async
+    public void sendPasswordResetAsync(User user, String temporaryPassword) {
+        if (user.getEmail() == null || user.getEmail().isBlank()) {
+            logger.warn("User {} has no email address. Skipping password reset email.", user.getUsername());
+            return;
+        }
+
+        try {
+            MimeMessage message = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom(senderEmail, "SML Agro Team");
+            helper.setTo(user.getEmail());
+            helper.setSubject("Your SML Agro account password has been reset");
+
+            String plainText = String.format(
+                    "Hello %s,\n\n" +
+                            "Your password has been reset by a super admin.\n" +
+                            "Temporary Password: %s\n\n" +
+                            "Please sign in and change your password immediately.\n\n" +
+                            "Best Regards,\n" +
+                            "SML Agro Team\n",
+                    user.getUsername(), temporaryPassword);
+
+            helper.setText(plainText, false);
+            javaMailSender.send(message);
+
+            logger.info("Password reset email sent for user: {}", user.getUsername());
+        } catch (Exception e) {
+            logger.error("Failed to send password reset email for user: {}", user.getUsername(), e);
         }
     }
 }
