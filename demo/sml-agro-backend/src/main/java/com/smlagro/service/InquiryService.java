@@ -1,12 +1,12 @@
 package com.smlagro.service;
 
+import java.util.List;
+
 import com.smlagro.dto.request.InquiryRequest;
 import com.smlagro.dto.response.DashboardStatsResponse;
 import com.smlagro.dto.response.InquiryResponse;
 import com.smlagro.model.InquiryStatus;
 import com.smlagro.model.Priority;
-
-import java.util.List;
 
 // Interface segregation: only inquiry-related operations here (ISP)
 public interface InquiryService {
@@ -28,4 +28,8 @@ public interface InquiryService {
     InquiryResponse updateNotes(Long id, String notes);
 
     DashboardStatsResponse getDashboardStats();
+
+    List<InquiryResponse> getDashboardMetricDetails(String metric);
+
+    List<java.util.Map<String, Object>> getInquiryTrend(String granularity, int days);
 }
