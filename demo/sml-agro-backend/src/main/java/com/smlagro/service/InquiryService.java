@@ -28,4 +28,6 @@ public interface InquiryService {
     InquiryResponse updateNotes(Long id, String notes);
 
     DashboardStatsResponse getDashboardStats();
+
+    List<InquiryResponse> getDashboardMetricDetails(String metric);
 }

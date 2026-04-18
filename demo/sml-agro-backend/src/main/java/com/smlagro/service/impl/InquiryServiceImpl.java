@@ -15,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -118,13 +118,22 @@ public class InquiryServiceImpl implements InquiryService {
     @Transactional(readOnly = true)
     public DashboardStatsResponse getDashboardStats() {
         DashboardStatsResponse stats = new DashboardStatsResponse();
+        LocalDateTime now = LocalDateTime.now();
 
         long total = inquiryRepository.count();
         stats.setTotalInquiries(total);
 
-        // Today count
-        LocalDateTime startOfToday = LocalDate.now().atStartOfDay();
-        stats.setNewToday(inquiryRepository.countByCreatedAtAfter(startOfToday));
+        // Last 24h count
+        LocalDateTime last24Hours = now.minusHours(24);
+        long newLast24Hours = inquiryRepository.countByCreatedAtAfter(last24Hours);
+        stats.setNewToday(newLast24Hours);
+
+        LocalDateTime previous24Hours = last24Hours.minusHours(24);
+        long previous24HoursCount = inquiryRepository.findAllByOrderByCreatedAtDesc().stream()
+            .filter(i -> i.getCreatedAt() != null && i.getCreatedAt().isAfter(previous24Hours)
+                && !i.getCreatedAt().isAfter(last24Hours))
+            .count();
+        stats.setNewTodayChangePct(calculatePercentChange(newLast24Hours, previous24HoursCount));
 
         // This week count
         LocalDateTime startOfWeek = LocalDate.now().minusDays(7).atStartOfDay();
@@ -138,7 +147,31 @@ public class InquiryServiceImpl implements InquiryService {
         // Conversion rate: closed / total
         double conversionRate = total > 0 ? Math.round((double) closed / total * 100.0 * 10) / 10.0 : 0.0;
         stats.setConversionRate(conversionRate);
-        stats.setAvgResponseHours(4.2); // placeholder — real calc needs respondedAt data
+
+        List<Inquiry> allInquiries = inquiryRepository.findAllByOrderByCreatedAtDesc();
+
+        LocalDateTime current30Start = now.minusDays(30);
+        LocalDateTime previous30Start = now.minusDays(60);
+        List<Inquiry> current30Days = allInquiries.stream()
+            .filter(i -> i.getCreatedAt() != null && i.getCreatedAt().isAfter(current30Start))
+            .toList();
+        List<Inquiry> previous30Days = allInquiries.stream()
+            .filter(i -> i.getCreatedAt() != null && i.getCreatedAt().isAfter(previous30Start)
+                && !i.getCreatedAt().isAfter(current30Start))
+            .toList();
+
+        long current30Count = current30Days.size();
+        long previous30Count = previous30Days.size();
+        stats.setTotalInquiriesChangePct(calculatePercentChange(current30Count, previous30Count));
+
+        double current30ConversionRate = calculateConversionRate(current30Days);
+        double previous30ConversionRate = calculateConversionRate(previous30Days);
+        stats.setConversionRateChangePct(calculatePercentChange(current30ConversionRate, previous30ConversionRate));
+
+        double currentAvgResponseHours = calculateAverageResponseHours(current30Days);
+        double previousAvgResponseHours = calculateAverageResponseHours(previous30Days);
+        stats.setAvgResponseHours(currentAvgResponseHours);
+        stats.setAvgResponseHoursChangePct(calculatePercentChange(currentAvgResponseHours, previousAvgResponseHours));
 
         // Weekly trend (last 8 weeks)
         LocalDateTime eightWeeksAgo = LocalDateTime.now().minusWeeks(8);
@@ -162,6 +195,50 @@ public class InquiryServiceImpl implements InquiryService {
         stats.setStatusBreakdown(statusData);
 
         return stats;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InquiryResponse> getDashboardMetricDetails(String metric) {
+        if (metric == null || metric.isBlank()) {
+            throw new IllegalArgumentException("Metric is required");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime last24Hours = now.minusHours(24);
+
+        List<Inquiry> all = inquiryRepository.findAllByOrderByCreatedAtDesc();
+        String normalizedMetric = metric.trim().toUpperCase(Locale.ROOT);
+
+        List<Inquiry> filtered;
+        switch (normalizedMetric) {
+            case "TOTAL_INQUIRIES":
+                filtered = all.stream().limit(100).toList();
+                break;
+            case "NEW_TODAY":
+                filtered = all.stream()
+                        .filter(i -> i.getCreatedAt() != null && i.getCreatedAt().isAfter(last24Hours))
+                        .limit(100)
+                        .toList();
+                break;
+            case "CONVERSION_RATE":
+                filtered = all.stream()
+                        .filter(i -> i.getStatus() == InquiryStatus.QUOTED)
+                        .limit(100)
+                        .toList();
+                break;
+            case "AVG_RESPONSE_TIME":
+                filtered = all.stream()
+                        .filter(i -> i.getCreatedAt() != null && i.getRespondedAt() != null)
+                        .sorted(Comparator.comparing(Inquiry::getRespondedAt, Comparator.nullsLast(Comparator.reverseOrder())))
+                        .limit(100)
+                        .toList();
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported metric: " + metric);
+        }
+
+        return filtered.stream().map(InquiryResponse::fromEntity).toList();
     }
 
     // ===================== Private helpers =====================
@@ -207,7 +284,6 @@ public class InquiryServiceImpl implements InquiryService {
     }
 
     private List<Map<String, Object>> buildCountryBreakdown(List<Object[]> rows) {
-        long totalForPie = rows.stream().mapToLong(r -> ((Number) r[1]).longValue()).sum();
         List<Map<String, Object>> result = new ArrayList<>();
         long othersCount = 0;
         int processed = 0;
@@ -229,5 +305,38 @@ public class InquiryServiceImpl implements InquiryService {
             result.add(others);
         }
         return result;
+    }
+
+    private double calculateConversionRate(List<Inquiry> inquiries) {
+        if (inquiries.isEmpty()) {
+            return 0.0;
+        }
+        long quotedCount = inquiries.stream().filter(i -> i.getStatus() == InquiryStatus.QUOTED).count();
+        return roundOneDecimal((quotedCount * 100.0) / inquiries.size());
+    }
+
+    private double calculateAverageResponseHours(List<Inquiry> inquiries) {
+        List<Double> values = inquiries.stream()
+                .filter(i -> i.getCreatedAt() != null && i.getRespondedAt() != null)
+                .map(i -> (double) ChronoUnit.MINUTES.between(i.getCreatedAt(), i.getRespondedAt()) / 60.0)
+                .filter(hours -> hours >= 0)
+                .toList();
+
+        if (values.isEmpty()) {
+            return 0.0;
+        }
+        double avg = values.stream().mapToDouble(Double::doubleValue).average().orElse(0.0);
+        return roundOneDecimal(avg);
+    }
+
+    private double calculatePercentChange(double current, double previous) {
+        if (previous == 0.0) {
+            return current == 0.0 ? 0.0 : 100.0;
+        }
+        return roundOneDecimal(((current - previous) / previous) * 100.0);
+    }
+
+    private double roundOneDecimal(double value) {
+        return Math.round(value * 10.0) / 10.0;
     }
 }

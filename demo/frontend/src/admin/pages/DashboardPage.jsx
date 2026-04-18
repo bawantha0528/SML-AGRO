@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowUpRight, Clock, Loader2, RefreshCw, TrendingUp, Users } from 'lucide-react';
+import { AlertTriangle, ArrowUpRight, CheckCircle2, Clock, Loader2, RefreshCw, TrendingUp, Users, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
     Bar,
@@ -15,6 +15,12 @@ import {
 } from 'recharts';
 
 const COLORS = ['#2E7D32', '#C8A45C', '#1C1A17', '#4A90D9', '#E67E22'];
+const METRIC_DETAIL_TITLE = {
+    TOTAL_INQUIRIES: 'All Inquiries',
+    NEW_TODAY: 'Inquiries in Last 24 Hours',
+    CONVERSION_RATE: 'Quoted Inquiries',
+    AVG_RESPONSE_TIME: 'Responded Inquiries',
+};
 
 const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -35,10 +41,18 @@ const CustomTooltip = ({ active, payload, label }) => {
 export function DashboardPage() {
     const [stats, setStats] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(false);
     const [error, setError] = useState('');
+    const [detailMetric, setDetailMetric] = useState(null);
+    const [detailList, setDetailList] = useState([]);
+    const [detailLoading, setDetailLoading] = useState(false);
 
-    const fetchStats = async () => {
-        setLoading(true);
+    const fetchStats = async (showLoader = true) => {
+        if (showLoader) {
+            setLoading(true);
+        } else {
+            setRefreshing(true);
+        }
         setError('');
         try {
             const res = await fetch('/api/admin/dashboard/stats');
@@ -54,6 +68,10 @@ export function DashboardPage() {
                 openInquiries: 0,
                 conversionRate: 0,
                 avgResponseHours: 0,
+                totalInquiriesChangePct: 0,
+                newTodayChangePct: 0,
+                conversionRateChangePct: 0,
+                avgResponseHoursChangePct: 0,
                 weeklyTrend: [
                     { name: 'Week 1', inquiries: 0 }, { name: 'Week 2', inquiries: 0 },
                     { name: 'Week 3', inquiries: 0 }, { name: 'Week 4', inquiries: 0 }
@@ -62,11 +80,35 @@ export function DashboardPage() {
                 statusBreakdown: [],
             });
         } finally {
-            setLoading(false);
+            if (showLoader) {
+                setLoading(false);
+            }
+            setRefreshing(false);
         }
     };
 
-    useEffect(() => { fetchStats(); }, []);
+    const fetchMetricDetails = async (metric) => {
+        setDetailMetric(metric);
+        setDetailLoading(true);
+        try {
+            const res = await fetch(`/api/admin/dashboard/details?metric=${encodeURIComponent(metric)}`);
+            if (!res.ok) throw new Error('Failed to load metric details');
+            const json = await res.json();
+            setDetailList(Array.isArray(json.data) ? json.data : []);
+        } catch {
+            setDetailList([]);
+        } finally {
+            setDetailLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchStats(true);
+        const intervalId = setInterval(() => {
+            fetchStats(false);
+        }, 5 * 60 * 1000);
+        return () => clearInterval(intervalId);
+    }, []);
 
     if (loading) {
         return (
@@ -81,28 +123,36 @@ export function DashboardPage() {
         {
             title: 'Total Inquiries',
             value: stats.totalInquiries,
-            sub: `${stats.newToday} new today`,
+            sub: 'All time',
+            change: stats.totalInquiriesChangePct,
+            metricKey: 'TOTAL_INQUIRIES',
             icon: TrendingUp,
             color: 'bg-green-100 text-green-700',
         },
         {
-            title: 'Open Inquiries',
-            value: stats.openInquiries,
-            sub: 'Awaiting response',
+            title: 'New Today',
+            value: stats.newToday,
+            sub: 'Last 24 hours',
+            change: stats.newTodayChangePct,
+            metricKey: 'NEW_TODAY',
             icon: Users,
             color: 'bg-blue-100 text-blue-700',
         },
         {
             title: 'Conversion Rate',
             value: `${stats.conversionRate}%`,
-            sub: 'Inquiries closed',
+            sub: 'Quoted / Total',
+            change: stats.conversionRateChangePct,
+            metricKey: 'CONVERSION_RATE',
             icon: ArrowUpRight,
             color: 'bg-purple-100 text-purple-700',
         },
         {
-            title: 'Avg Response',
+            title: 'Avg Response Time',
             value: `${stats.avgResponseHours}h`,
-            sub: 'Average time to respond',
+            sub: 'Hours',
+            change: stats.avgResponseHoursChangePct,
+            metricKey: 'AVG_RESPONSE_TIME',
             icon: Clock,
             color: 'bg-orange-100 text-orange-700',
         },
@@ -119,10 +169,11 @@ export function DashboardPage() {
             <div className="flex items-center justify-between">
                 <h2 className="text-2xl font-bold text-gray-900">Dashboard Overview</h2>
                 <button
-                    onClick={fetchStats}
+                    onClick={() => fetchStats(false)}
                     className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-200 text-sm text-gray-500 hover:bg-gray-50 transition-colors"
                 >
-                    <RefreshCw className="w-3.5 h-3.5" /> Refresh
+                    <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? 'animate-spin' : ''}`} />
+                    {refreshing ? 'Refreshing...' : 'Refresh'}
                 </button>
             </div>
 
@@ -135,16 +186,23 @@ export function DashboardPage() {
             {/* Metric Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                 {metrics.map((m, idx) => (
-                    <div key={idx} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between">
+                    <button
+                        key={idx}
+                        onClick={() => fetchMetricDetails(m.metricKey)}
+                        className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center justify-between text-left hover:shadow-md transition-shadow"
+                    >
                         <div>
                             <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">{m.title}</p>
                             <h3 className="text-3xl font-bold text-gray-900 mt-1">{m.value}</h3>
                             <p className="text-xs text-gray-400 mt-1">{m.sub}</p>
+                            <p className={`text-xs mt-2 font-semibold ${m.change >= 0 ? 'text-emerald-600' : 'text-red-600'}`}>
+                                {m.change >= 0 ? '+' : ''}{m.change}% vs previous period
+                            </p>
                         </div>
                         <div className={`p-3 rounded-xl ${m.color}`}>
                             <m.icon className="w-6 h-6" />
                         </div>
-                    </div>
+                    </button>
                 ))}
             </div>
 
@@ -239,6 +297,65 @@ export function DashboardPage() {
                     })}
                 </div>
             </div>
+
+            {detailMetric && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-start justify-center p-4 overflow-y-auto">
+                    <div className="bg-white rounded-xl shadow-2xl w-full max-w-4xl my-8 border border-gray-100">
+                        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                            <h3 className="text-lg font-bold text-gray-800">
+                                {METRIC_DETAIL_TITLE[detailMetric] || 'Metric Details'}
+                            </h3>
+                            <button
+                                onClick={() => setDetailMetric(null)}
+                                className="text-gray-400 hover:text-gray-700"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
+
+                        <div className="p-6">
+                            {detailLoading ? (
+                                <div className="flex items-center justify-center h-40 gap-2 text-gray-400">
+                                    <Loader2 className="w-5 h-5 animate-spin text-sml-green" />
+                                    <span>Loading details...</span>
+                                </div>
+                            ) : detailList.length === 0 ? (
+                                <div className="text-center py-14 text-gray-400">No records found for this metric.</div>
+                            ) : (
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-sm text-left text-gray-600">
+                                        <thead className="bg-gray-50 text-xs uppercase tracking-wider text-gray-500">
+                                            <tr>
+                                                <th className="px-4 py-3">Inquiry #</th>
+                                                <th className="px-4 py-3">Customer</th>
+                                                <th className="px-4 py-3">Email</th>
+                                                <th className="px-4 py-3">Status</th>
+                                                <th className="px-4 py-3">Created</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-100">
+                                            {detailList.map((item) => (
+                                                <tr key={item.id} className="hover:bg-gray-50">
+                                                    <td className="px-4 py-3 font-semibold text-gray-800">{item.inquiryNumber}</td>
+                                                    <td className="px-4 py-3">{item.customerName}</td>
+                                                    <td className="px-4 py-3">{item.email}</td>
+                                                    <td className="px-4 py-3">
+                                                        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 text-gray-700 px-2 py-0.5 text-xs font-semibold">
+                                                            <CheckCircle2 className="w-3 h-3" />
+                                                            {item.status}
+                                                        </span>
+                                                    </td>
+                                                    <td className="px-4 py-3">{item.createdAt ? new Date(item.createdAt).toLocaleString() : '-'}</td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

@@ -12,6 +12,10 @@ public class DashboardStatsResponse {
     private long closedInquiries;
     private double conversionRate;
     private double avgResponseHours;
+    private double totalInquiriesChangePct;
+    private double newTodayChangePct;
+    private double conversionRateChangePct;
+    private double avgResponseHoursChangePct;
     private List<Map<String, Object>> weeklyTrend;
     private List<Map<String, Object>> countryBreakdown;
     private List<Map<String, Object>> statusBreakdown;
@@ -73,6 +77,38 @@ public class DashboardStatsResponse {
 
     public void setAvgResponseHours(double avgResponseHours) {
         this.avgResponseHours = avgResponseHours;
+    }
+
+    public double getTotalInquiriesChangePct() {
+        return totalInquiriesChangePct;
+    }
+
+    public void setTotalInquiriesChangePct(double totalInquiriesChangePct) {
+        this.totalInquiriesChangePct = totalInquiriesChangePct;
+    }
+
+    public double getNewTodayChangePct() {
+        return newTodayChangePct;
+    }
+
+    public void setNewTodayChangePct(double newTodayChangePct) {
+        this.newTodayChangePct = newTodayChangePct;
+    }
+
+    public double getConversionRateChangePct() {
+        return conversionRateChangePct;
+    }
+
+    public void setConversionRateChangePct(double conversionRateChangePct) {
+        this.conversionRateChangePct = conversionRateChangePct;
+    }
+
+    public double getAvgResponseHoursChangePct() {
+        return avgResponseHoursChangePct;
+    }
+
+    public void setAvgResponseHoursChangePct(double avgResponseHoursChangePct) {
+        this.avgResponseHoursChangePct = avgResponseHoursChangePct;
     }
 
     public List<Map<String, Object>> getWeeklyTrend() {
