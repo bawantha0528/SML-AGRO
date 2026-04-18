@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
 import { Eye, EyeOff, Loader2, ShieldCheck } from 'lucide-react';
+import { useState } from 'react';
 
 export function LoginPage({ onLogin }) {
     const [username, setUsername] = useState('');
@@ -37,7 +37,7 @@ export function LoginPage({ onLogin }) {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center relative bg-sml-dark overflow-hidden">
+        <div className="min-h-screen flex items-center justify-center relative bg-sml-dark overflow-hidden p-4">
             {/* Background */}
             <div
                 className="absolute inset-0 z-0"
@@ -49,14 +49,16 @@ export function LoginPage({ onLogin }) {
                 }}
             />
 
-            <div className="bg-white/95 backdrop-blur-md p-8 rounded-2xl shadow-2xl w-full max-w-md relative z-10 border border-white/20">
+            <div className="absolute inset-0 z-0 bg-gradient-to-br from-black/60 via-black/35 to-black/70" />
+
+            <div className="bg-white/95 backdrop-blur-xl p-8 rounded-3xl shadow-2xl w-full max-w-md relative z-10 border border-white/30 stagger-fade">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-14 h-14 bg-sml-green rounded-full mb-4 shadow-lg">
+                    <div className="inline-flex items-center justify-center w-14 h-14 bg-sml-green rounded-2xl mb-4 shadow-lg">
                         <ShieldCheck className="w-7 h-7 text-white" />
                     </div>
                     <h2 className="text-3xl font-bold text-sml-dark">Admin Portal</h2>
-                    <p className="text-gray-500 mt-1 text-sm">SML Agro Lanka — Secure Access</p>
+                    <p className="text-gray-500 mt-1 text-sm">SML Agro Lanka secure workspace</p>
                 </div>
 
                 {error && (
@@ -74,7 +76,7 @@ export function LoginPage({ onLogin }) {
                             type="text"
                             value={username}
                             onChange={(e) => setUsername(e.target.value)}
-                            className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all bg-gray-50"
+                            className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all bg-white"
                             placeholder="Enter username"
                             required
                             autoFocus
@@ -89,7 +91,7 @@ export function LoginPage({ onLogin }) {
                                 type={showPassword ? 'text' : 'password'}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
-                                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all bg-gray-50 pr-12"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all bg-white pr-12"
                                 placeholder="Enter password"
                                 required
                             />
@@ -106,7 +108,7 @@ export function LoginPage({ onLogin }) {
                     <button
                         type="submit"
                         disabled={loading}
-                        className="w-full bg-sml-green text-white font-bold py-3 rounded-lg hover:bg-sml-dark transition-colors shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        className="w-full bg-sml-green text-white font-bold py-3 rounded-xl hover:bg-sml-dark transition-colors shadow-md disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                     >
                         {loading ? (
                             <>
@@ -117,7 +119,7 @@ export function LoginPage({ onLogin }) {
                     </button>
                 </form>
 
-                <div className="mt-6 p-3 bg-gray-50 rounded-lg text-center">
+                <div className="mt-6 p-3 bg-sml-cream rounded-xl text-center border border-gray-200">
                     <p className="text-xs text-gray-400 font-medium">Demo Credentials</p>
                     <p className="text-xs text-gray-500 mt-1">
                         <span className="font-semibold text-gray-600">admin</span> / admin123 &nbsp;·&nbsp;

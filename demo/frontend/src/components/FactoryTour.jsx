@@ -8,20 +8,24 @@ export function FactoryTour() {
   return (
     <section
       id="tour"
-      className="py-20 bg-sml-dark text-sml-cream relative overflow-hidden"
+      className="py-32 bg-[#0A120E] text-sml-cream relative overflow-hidden"
     >
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-5 bg-[url('https://www.transparenttextures.com/patterns/wood-pattern.png')]"></div>
+      <div className="absolute inset-0 opacity-[0.03] bg-palm-pattern"></div>
+      
+      {/* Modern Gradient Orbs */}
+      <div className="absolute top-[-20%] right-[-10%] w-[50rem] h-[50rem] bg-sml-green/10 rounded-full blur-[150px] pointer-events-none -z-10 animate-float" />
+      <div className="absolute bottom-[-20%] left-[-10%] w-[50rem] h-[50rem] bg-sml-amber/10 rounded-full blur-[150px] pointer-events-none -z-10 animate-float-delayed" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="text-center mb-12">
-          <span className="text-sml-green-light font-semibold text-sm tracking-widest uppercase">
+        <div className="text-center mb-16 stagger-fade">
+          <span className="inline-block py-1 px-4 rounded-full bg-sml-green/20 text-[#34D399] font-bold text-xs tracking-[0.3em] uppercase mb-6 border border-[#34D399]/20 shadow-[0_0_20px_rgba(52,211,153,0.1)]">
             Transparency First
           </span>
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-white mt-3 mb-6">
-            360° Virtual Factory Tour
+          <h2 className="text-4xl md:text-6xl font-serif font-bold text-white mb-6">
+            360° Virtual <span className="text-transparent bg-clip-text bg-gradient-to-r from-sml-green to-[#34D399]">Factory Tour</span>
           </h2>
-          <p className="text-gray-400 max-w-2xl mx-auto">
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg leading-relaxed">
             Experience our sustainable production process from anywhere in the
             world. Walk through our processing units, drying yards, and
             packaging facilities.
@@ -93,8 +97,7 @@ export function FactoryTour() {
           </AnimatePresence>
         </div>
 
-        {/* Tour Stops */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16">
           {[
             {
               icon: Settings,
@@ -114,13 +117,16 @@ export function FactoryTour() {
           ].map((stop, idx) => (
             <div
               key={idx}
-              className="bg-white/5 p-6 rounded-xl border border-white/10 hover:bg-white/10 transition-colors"
+              className="glass-panel-dark p-8 rounded-2xl group hover:-translate-y-2 transition-all duration-300 relative overflow-hidden"
             >
-              <stop.icon className="w-8 h-8 text-sml-green-light mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">
+              <div className="absolute -right-4 -top-4 w-24 h-24 bg-sml-green/10 rounded-full blur-xl group-hover:bg-sml-green/20 transition-all duration-500" />
+              <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-6 group-hover:bg-sml-green/20 transition-colors duration-300 border border-white/5">
+                <stop.icon className="w-8 h-8 text-[#34D399] group-hover:scale-110 transition-transform duration-300" />
+              </div>
+              <h3 className="text-xl font-bold text-white mb-3">
                 {stop.title}
               </h3>
-              <p className="text-gray-400 text-sm">{stop.desc}</p>
+              <p className="text-gray-400 text-sm leading-relaxed">{stop.desc}</p>
             </div>
           ))}
         </div>

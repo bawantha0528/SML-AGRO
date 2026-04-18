@@ -1,0 +1,40 @@
+CREATE TABLE IF NOT EXISTS custom_catalog_products (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    created_at DATETIME(6) NOT NULL,
+    display_order INT DEFAULT NULL,
+    image_url VARCHAR(500) DEFAULT NULL,
+    is_active BIT(1) NOT NULL,
+    name VARCHAR(120) NOT NULL,
+    short_description VARCHAR(255) DEFAULT NULL,
+    updated_at DATETIME(6) DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY idx_custom_catalog_active (is_active),
+    KEY idx_custom_catalog_name (name)
+);
+
+CREATE TABLE IF NOT EXISTS custom_inquiries (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    order_number VARCHAR(30) NOT NULL,
+    customer_name VARCHAR(100) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    phone VARCHAR(20) DEFAULT NULL,
+    country VARCHAR(60) DEFAULT NULL,
+    product_type VARCHAR(80) NOT NULL,
+    color VARCHAR(40) NOT NULL,
+    size VARCHAR(40) NOT NULL,
+    design_name VARCHAR(120) NOT NULL,
+    quantity INT NOT NULL,
+    special_notes TEXT DEFAULT NULL,
+    calculated_price DOUBLE DEFAULT 0.0,
+    budget_range VARCHAR(60) DEFAULT NULL,
+    target_delivery_date VARCHAR(30) DEFAULT NULL,
+    reference_images TEXT DEFAULT NULL,
+    status ENUM('CANCELLED','COMPLETED','IN_PRODUCTION','NEW','QUOTED','REVIEWED') NOT NULL,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_custom_inquiry_order_number (order_number),
+    KEY idx_custom_inquiry_number (order_number),
+    KEY idx_custom_inquiry_status (status),
+    KEY idx_custom_inquiry_email (email)
+);

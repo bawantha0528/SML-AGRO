@@ -94,14 +94,18 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                 <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
 
                     {/* Page Header */}
-                    <div className="bg-sml-dark rounded-2xl px-8 py-8 mb-6 shadow-xl">
-                        <h1 className="text-3xl font-serif font-bold text-sml-cream">
-                            Submit Your Inquiry
-                        </h1>
-                        <p className="text-gray-400 mt-2 text-sm">
-                            Fill in the details below and our export team will respond within 24 hours.
-                            You'll receive a unique inquiry tracking number upon submission.
-                        </p>
+                    <div className="surface-card bg-sml-dark p-10 mb-8 rounded-[2rem] shadow-strong relative overflow-hidden">
+                        <div className="absolute -top-32 -right-32 w-64 h-64 bg-sml-green/20 rounded-full blur-[80px]" />
+                        <div className="absolute -bottom-32 -left-32 w-64 h-64 bg-sml-amber/20 rounded-full blur-[80px]" />
+                        <div className="relative z-10">
+                            <h1 className="text-4xl md:text-5xl font-serif font-bold text-white mb-4">
+                                Submit Your Inquiry
+                            </h1>
+                            <p className="text-gray-400 max-w-2xl text-lg leading-relaxed">
+                                Fill in the details below and our export team will respond within 24 hours.
+                                You'll receive a unique inquiry tracking number upon submission.
+                            </p>
+                        </div>
                     </div>
 
                     {/* Success Banner */}
@@ -135,18 +139,18 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                     )}
 
                     {/* Form Card */}
-                    <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
-                        <form onSubmit={handleSubmit} className="p-8 md:p-10 space-y-6">
+                    <div className="surface-card p-10 md:p-12 mb-8 rounded-[2rem]">
+                        <form onSubmit={handleSubmit} className="space-y-10">
 
                             {/* Contact Info */}
                             <div>
-                                <h2 className="text-base font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">
+                                <h2 className="text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-6 pb-2 border-b-2 border-gray-100">
                                     Contact Information
                                 </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Full Name <span className="text-red-500">*</span>
+                                        <label className="block text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-2">
+                                            Full Name <span className="text-sml-green">*</span>
                                         </label>
                                         <input
                                             type="text"
@@ -154,12 +158,12 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                                             value={form.customerName}
                                             onChange={handleChange}
                                             required
-                                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all"
+                                            className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none transition-all"
                                             placeholder="Your Full Name"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <label className="block text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-2">
                                             Company / Organisation
                                         </label>
                                         <input
@@ -167,13 +171,13 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                                             name="company"
                                             value={form.company}
                                             onChange={handleChange}
-                                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all"
+                                            className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none transition-all"
                                             placeholder="Company Name"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Email Address <span className="text-red-500">*</span>
+                                        <label className="block text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-2">
+                                            Email Address <span className="text-sml-green">*</span>
                                         </label>
                                         <input
                                             type="email"
@@ -181,12 +185,12 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                                             value={form.email}
                                             onChange={handleChange}
                                             required
-                                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all"
+                                            className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none transition-all"
                                             placeholder="email@company.com"
                                         />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <label className="block text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-2">
                                             Phone / WhatsApp
                                         </label>
                                         <input
@@ -194,7 +198,7 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                                             name="phone"
                                             value={form.phone}
                                             onChange={handleChange}
-                                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all"
+                                            className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none transition-all"
                                             placeholder="+1 (555) 000-0000"
                                         />
                                     </div>
@@ -203,41 +207,41 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
 
                             {/* Order Details */}
                             <div>
-                                <h2 className="text-base font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">
+                                <h2 className="text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-6 pb-2 border-b-2 border-gray-100">
                                     Order Details
                                 </h2>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-8">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                                            Country <span className="text-red-500">*</span>
+                                        <label className="block text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-2">
+                                            Country <span className="text-sml-green">*</span>
                                         </label>
                                         <select
                                             name="country"
                                             value={form.country}
                                             onChange={handleChange}
                                             required
-                                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none"
+                                            className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none cursor-pointer transition-all"
                                         >
                                             <option value="">Select your country...</option>
                                             {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
                                         </select>
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <label className="block text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-2">
                                             Product Interest
                                         </label>
                                         <select
                                             name="productsRequested"
                                             value={form.productsRequested}
                                             onChange={handleChange}
-                                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none"
+                                            className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none cursor-pointer transition-all"
                                         >
                                             <option value="">Select a product...</option>
                                             {PRODUCTS.map(p => <option key={p} value={p}>{p}</option>)}
                                         </select>
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                                        <label className="block text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-2">
                                             Estimated Quantity
                                         </label>
                                         <input
@@ -245,7 +249,7 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                                             name="estimatedQuantity"
                                             value={form.estimatedQuantity}
                                             onChange={handleChange}
-                                            className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all"
+                                            className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none transition-all"
                                             placeholder="e.g. 500 MT, 20 x 40ft containers, 10,000 bags"
                                         />
                                     </div>
@@ -254,7 +258,7 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
 
                             {/* Message */}
                             <div>
-                                <h2 className="text-base font-bold text-gray-700 mb-4 pb-2 border-b border-gray-100">
+                                <h2 className="text-xs font-bold text-sml-text/70 uppercase tracking-widest mb-6 pb-2 border-b-2 border-gray-100">
                                     Message & Requirements
                                 </h2>
                                 <textarea
@@ -262,7 +266,7 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                                     value={form.specialRequirements}
                                     onChange={handleChange}
                                     rows={5}
-                                    className="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none transition-all resize-none"
+                                    className="w-full bg-gray-50/50 border-0 border-b-2 border-gray-200 px-4 py-3 text-sm focus:ring-0 focus:border-sml-green focus:bg-sml-green/5 outline-none transition-all resize-none"
                                     placeholder="Tell us about your specific requirements — EC levels, certifications needed (organic, EU), delivery terms, packaging preferences, timeline, etc."
                                 />
                             </div>
@@ -275,7 +279,7 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
                                 <button
                                     type="submit"
                                     disabled={submitting}
-                                    className="inline-flex items-center gap-2 bg-sml-dark text-sml-cream font-bold py-4 px-10 rounded-xl hover:bg-gray-800 transition-colors shadow-lg disabled:opacity-60 disabled:cursor-not-allowed"
+                                    className="inline-flex items-center gap-2 bg-sml-dark text-sml-cream font-bold py-4 px-10 rounded-xl hover:bg-sml-green transition-all shadow-lg disabled:opacity-60 disabled:cursor-not-allowed uppercase tracking-widest text-xs"
                                 >
                                     {submitting ? (
                                         <>

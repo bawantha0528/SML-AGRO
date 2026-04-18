@@ -1,9 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import { AlertTriangle, ArrowUpRight, Clock, Loader2, RefreshCw, TrendingUp, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import {
-    LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    PieChart, Pie, Cell, Legend, BarChart, Bar
+    Bar,
+    BarChart,
+    CartesianGrid,
+    Cell, Legend,
+    Line,
+    LineChart,
+    Pie,
+    PieChart,
+    ResponsiveContainer,
+    Tooltip,
+    XAxis, YAxis
 } from 'recharts';
-import { TrendingUp, ArrowUpRight, Users, Clock, Loader2, AlertTriangle, RefreshCw } from 'lucide-react';
 
 const COLORS = ['#2E7D32', '#C8A45C', '#1C1A17', '#4A90D9', '#E67E22'];
 
@@ -145,7 +154,7 @@ export function DashboardPage() {
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <h3 className="text-base font-bold text-gray-800 mb-5">Inquiry Trend (Weekly)</h3>
                     <div className="h-64">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minHeight={240}>
                             <LineChart data={stats.weeklyTrend}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#9CA3AF' }} />
@@ -166,7 +175,7 @@ export function DashboardPage() {
                     <h3 className="text-base font-bold text-gray-800 mb-5">Inquiries by Country</h3>
                     <div className="h-64">
                         {stats.countryBreakdown.length > 0 ? (
-                            <ResponsiveContainer width="100%" height="100%">
+                            <ResponsiveContainer width="100%" height="100%" minHeight={240}>
                                 <PieChart>
                                     <Pie
                                         data={stats.countryBreakdown}
@@ -198,7 +207,7 @@ export function DashboardPage() {
                 <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
                     <h3 className="text-base font-bold text-gray-800 mb-5">Inquiries by Status</h3>
                     <div className="h-48">
-                        <ResponsiveContainer width="100%" height="100%">
+                        <ResponsiveContainer width="100%" height="100%" minHeight={180}>
                             <BarChart data={stats.statusBreakdown} barSize={40}>
                                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F3F4F6" />
                                 <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: '#6B7280' }} />
