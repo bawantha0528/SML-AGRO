@@ -1,8 +1,8 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
 import { Footer } from './components/Footer';
 import { HeroSection } from './components/HeroSection';
-import { Navbar } from './components/Navbar';
 import { LazyMount } from './components/LazyMount';
+import { Navbar } from './components/Navbar';
 
 const AboutSection = lazy(() => import('./components/AboutSection').then((m) => ({ default: m.AboutSection })));
 const AgriBotChat = lazy(() => import('./components/AgriBotChat').then((m) => ({ default: m.AgriBotChat })));
