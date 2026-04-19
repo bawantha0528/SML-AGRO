@@ -76,6 +76,8 @@ const CUSTOM_PRODUCT_IMAGES = {
 
 const normalize = (value) => String(value || '').trim().toLowerCase();
 
+export const PRODUCT_FALLBACK_IMAGE = '/b-coirproducts.jpg';
+
 const findRawCategoryByName = (name) => {
   const key = normalize(name);
   if (key.includes('peat') || key.includes('pith') || key.includes('coco pit')) return 'COCOPEAT';

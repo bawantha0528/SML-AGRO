@@ -1,7 +1,7 @@
 import { ArrowLeft, CheckCircle2, Loader2, Send } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { formatSpecifications } from '../utils/formatSpecifications';
-import { getProductGallery } from '../utils/productImages';
+import { getProductGallery, PRODUCT_FALLBACK_IMAGE } from '../utils/productImages';
 
 const COLOR_OPTIONS = ['Natural', 'Brown', 'Black', 'White', 'Green', 'Blue', 'Custom'];
 const SIZE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large', 'Custom'];
@@ -172,7 +172,17 @@ export function ProductDetailPage({ onNavigate, product }) {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div>
               <div className="rounded-2xl overflow-hidden border border-gray-200 bg-[#f2ece2] aspect-square">
-                <img src={mainImage} alt={activeProduct.name} className="w-full h-full object-cover" />
+                <img
+                  src={mainImage}
+                  alt={activeProduct.name}
+                  className="w-full h-full object-cover"
+                  onError={(event) => {
+                    if (event.currentTarget.src.includes(PRODUCT_FALLBACK_IMAGE)) {
+                      return;
+                    }
+                    event.currentTarget.src = PRODUCT_FALLBACK_IMAGE;
+                  }}
+                />
               </div>
               <div className="grid grid-cols-3 gap-3 mt-3">
                 {gallery.map((img, index) => (
@@ -181,7 +191,17 @@ export function ProductDetailPage({ onNavigate, product }) {
                     onClick={() => setMainImage(img)}
                     className={`rounded-xl overflow-hidden border ${mainImage === img ? 'border-sml-dark' : 'border-gray-200'}`}
                   >
-                    <img src={img} alt={`${activeProduct.name} ${index + 1}`} className="h-24 w-full object-cover" />
+                    <img
+                      src={img}
+                      alt={`${activeProduct.name} ${index + 1}`}
+                      className="h-24 w-full object-cover"
+                      onError={(event) => {
+                        if (event.currentTarget.src.includes(PRODUCT_FALLBACK_IMAGE)) {
+                          return;
+                        }
+                        event.currentTarget.src = PRODUCT_FALLBACK_IMAGE;
+                      }}
+                    />
                   </button>
                 ))}
               </div>
