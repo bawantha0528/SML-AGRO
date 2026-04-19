@@ -1,18 +1,19 @@
-import { useEffect, useState } from 'react';
-import { AboutSection } from './components/AboutSection';
-import { AgriBotChat } from './components/AgriBotChat';
-import { ContactSection } from './components/ContactSection';
-import { FactoryTour } from './components/FactoryTour';
+import { lazy, Suspense, useEffect, useState } from 'react';
 import { Footer } from './components/Footer';
 import { HeroSection } from './components/HeroSection';
 import { Navbar } from './components/Navbar';
-import { ProductCatalog } from './components/ProductCatalog';
-import { ProductCustomization } from './components/ProductCustomization';
-import { ProductDetailPage } from './components/ProductDetailPage';
-import { ProductsSection } from './components/ProductsSection';
+import { LazyMount } from './components/LazyMount';
 
-import { AdminLayout } from './admin/AdminLayout';
-import { InquiryPage } from './components/InquiryPage';
+const AboutSection = lazy(() => import('./components/AboutSection').then((m) => ({ default: m.AboutSection })));
+const AgriBotChat = lazy(() => import('./components/AgriBotChat').then((m) => ({ default: m.AgriBotChat })));
+const ContactSection = lazy(() => import('./components/ContactSection').then((m) => ({ default: m.ContactSection })));
+const FactoryTour = lazy(() => import('./components/FactoryTour').then((m) => ({ default: m.FactoryTour })));
+const ProductCatalog = lazy(() => import('./components/ProductCatalog').then((m) => ({ default: m.ProductCatalog })));
+const ProductCustomization = lazy(() => import('./components/ProductCustomization').then((m) => ({ default: m.ProductCustomization })));
+const ProductDetailPage = lazy(() => import('./components/ProductDetailPage').then((m) => ({ default: m.ProductDetailPage })));
+const ProductsSection = lazy(() => import('./components/ProductsSection').then((m) => ({ default: m.ProductsSection })));
+const AdminLayout = lazy(() => import('./admin/AdminLayout').then((m) => ({ default: m.AdminLayout })));
+const InquiryPage = lazy(() => import('./components/InquiryPage').then((m) => ({ default: m.InquiryPage })));
 
 const PAGE_TO_PATH = {
   home: '/',
@@ -90,12 +91,38 @@ export function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  useEffect(() => {
+    const optimizeImages = () => {
+      document.querySelectorAll('img').forEach((img) => {
+        if (!img.hasAttribute('loading') && img.dataset.priority !== 'high') {
+          img.setAttribute('loading', 'lazy');
+        }
+        if (!img.hasAttribute('decoding')) {
+          img.setAttribute('decoding', 'async');
+        }
+      });
+    };
+
+    optimizeImages();
+    const observer = new MutationObserver(optimizeImages);
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
+
   if (currentPage === 'admin') {
-    return <AdminLayout />;
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-sml-cream" />}>
+        <AdminLayout />
+      </Suspense>
+    );
   }
 
   if (currentPage === 'inquiry') {
-    return <InquiryPage onNavigate={navigate} initialCustomization={customizationData} />;
+    return (
+      <Suspense fallback={<div className="min-h-screen bg-sml-cream" />}>
+        <InquiryPage onNavigate={navigate} initialCustomization={customizationData} />
+      </Suspense>
+    );
   }
 
   return (
@@ -128,33 +155,57 @@ export function App() {
       {currentPage === 'home' &&
         <main className="relative z-10">
           <HeroSection onNavigate={navigate} />
-          <ProductsSection onNavigate={navigate} />
-          <AboutSection />
-          <FactoryTour />
-          <ContactSection />
+          <LazyMount fallback={<div className="h-40" />}>
+            <Suspense fallback={<div className="h-40" />}>
+              <ProductsSection onNavigate={navigate} />
+            </Suspense>
+          </LazyMount>
+          <LazyMount fallback={<div className="h-32" />}>
+            <Suspense fallback={<div className="h-32" />}>
+              <AboutSection />
+            </Suspense>
+          </LazyMount>
+          <LazyMount fallback={<div className="h-32" />}>
+            <Suspense fallback={<div className="h-32" />}>
+              <FactoryTour />
+            </Suspense>
+          </LazyMount>
+          <LazyMount fallback={<div className="h-32" />}>
+            <Suspense fallback={<div className="h-32" />}>
+              <ContactSection />
+            </Suspense>
+          </LazyMount>
         </main>
       }
 
       {currentPage === 'catalog' &&
         <main className="pt-20">
-          <ProductCatalog onNavigate={navigate} />
+          <Suspense fallback={<div className="h-40" />}>
+            <ProductCatalog onNavigate={navigate} />
+          </Suspense>
         </main>
       }
 
       {currentPage === 'customize' &&
         <main className="pt-20">
-          <ProductCustomization onNavigate={navigate} />
+          <Suspense fallback={<div className="h-40" />}>
+            <ProductCustomization onNavigate={navigate} />
+          </Suspense>
         </main>
       }
 
       {currentPage === 'product' &&
         <main className="pt-20">
-          <ProductDetailPage onNavigate={navigate} product={customizationData} />
+          <Suspense fallback={<div className="h-40" />}>
+            <ProductDetailPage onNavigate={navigate} product={customizationData} />
+          </Suspense>
         </main>
       }
 
       <Footer />
-      <AgriBotChat />
+      <Suspense fallback={null}>
+        <AgriBotChat />
+      </Suspense>
       </div>
     </div>);
 

@@ -22,7 +22,11 @@ import jakarta.persistence.Table;
 @Table(name = "inquiries", indexes = {
         @Index(name = "idx_inquiry_number", columnList = "inquiry_number"),
         @Index(name = "idx_inquiry_email", columnList = "email"),
-        @Index(name = "idx_inquiry_status", columnList = "status")
+    @Index(name = "idx_inquiry_status", columnList = "status"),
+    @Index(name = "idx_inquiry_created_at", columnList = "created_at"),
+    @Index(name = "idx_inquiry_followup_date", columnList = "followup_date"),
+    @Index(name = "idx_inquiry_country", columnList = "country"),
+    @Index(name = "idx_inquiry_status_created", columnList = "status, created_at")
 })
 public class Inquiry {
 
