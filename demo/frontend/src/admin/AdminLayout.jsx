@@ -9,7 +9,7 @@ import {
     SwatchBook,
     Users
 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CustomOrdersPage } from './pages/CustomOrdersPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { InquiriesPage } from './pages/InquiriesPage';
@@ -29,6 +29,17 @@ export function AdminLayout() {
         return stored ? JSON.parse(stored) : null;
     });
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768) {
+                setMobileSidebarOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (!isAuthenticated) {
         return (
@@ -70,9 +81,17 @@ export function AdminLayout() {
 
     return (
         <div className="flex h-screen bg-sml-cream overflow-hidden font-sans">
+            {mobileSidebarOpen && (
+                <button
+                    aria-label="Close sidebar"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className="fixed inset-0 bg-black/45 z-30 md:hidden"
+                />
+            )}
+
             {/* Sidebar */}
             <aside
-                className={`bg-sml-dark text-white flex flex-col transition-all duration-300 border-r border-white/10 ${sidebarOpen ? 'w-64' : 'w-20'
+                className={`fixed md:static inset-y-0 left-0 z-40 bg-sml-dark text-white flex flex-col transition-all duration-300 border-r border-white/10 w-72 md:w-auto ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} ${sidebarOpen ? 'md:w-64' : 'md:w-20'
                     }`}
             >
                 <div className="h-16 flex items-center justify-center border-b border-gray-700">
@@ -87,7 +106,10 @@ export function AdminLayout() {
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
+                            onClick={() => {
+                                setActiveTab(item.id);
+                                setMobileSidebarOpen(false);
+                            }}
                             className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${activeTab === item.id
                                 ? 'bg-sml-green text-white shadow-lg'
                                 : 'text-gray-300 hover:bg-gray-800 hover:text-white'
@@ -102,7 +124,7 @@ export function AdminLayout() {
                 <div className="p-4 border-t border-gray-700">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center px-4 py-2 text-sml-green hover:bg-gray-800 rounded-lg transition-colors"
+                        className="w-full flex items-center px-4 py-3 text-sml-green hover:bg-gray-800 rounded-lg transition-colors"
                     >
                         <LogOut className="w-5 h-5 min-w-[20px]" />
                         {sidebarOpen && <span className="ml-4 font-medium">Logout</span>}
@@ -113,10 +135,19 @@ export function AdminLayout() {
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Top Header */}
-                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10 border-b border-gray-100">
+                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-3 sm:px-6 z-10 border-b border-gray-100">
+                    <button
+                        onClick={() => setMobileSidebarOpen((prev) => !prev)}
+                        className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 focus:outline-none"
+                        aria-label="Toggle sidebar"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 focus:outline-none"
+                        className="hidden md:inline-flex p-2 rounded-lg hover:bg-gray-100 text-gray-600 focus:outline-none"
+                        aria-label="Collapse sidebar"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
@@ -131,7 +162,7 @@ export function AdminLayout() {
                         </div>
                     </div>
 
-                    <div className="flex items-center space-x-3">
+                    <div className="flex items-center space-x-2 sm:space-x-3">
                         <button className="hidden sm:inline-flex w-9 h-9 rounded-lg border border-gray-200 items-center justify-center text-gray-500 hover:bg-gray-50">
                             <Bell className="w-4 h-4" />
                         </button>
@@ -139,7 +170,7 @@ export function AdminLayout() {
                             <p className="text-sm font-bold text-gray-800">{user?.username}</p>
                             <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
                         </div>
-                        <div className="w-10 h-10 bg-sml-green rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        <div className="w-10 h-10 bg-sml-green rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-md">
                             {user?.username.charAt(0).toUpperCase()}
                         </div>
                         <div className="w-px h-8 bg-gray-200 mx-1" />
@@ -155,7 +186,7 @@ export function AdminLayout() {
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-auto p-6 md:p-8 bg-gradient-to-br from-[#f7f4ee] to-[#f2ebde]">
+                <main className="flex-1 overflow-auto p-4 sm:p-5 md:p-8 bg-gradient-to-br from-[#f7f4ee] to-[#f2ebde]">
                     {renderContent()}
                 </main>
             </div>

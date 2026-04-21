@@ -9,7 +9,7 @@ import {
     Sprout,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { getProductImage } from '../utils/productImages';
+import { getProductImage, PRODUCT_FALLBACK_IMAGE } from '../utils/productImages';
 
 export function ProductsSection({ onNavigate }) {
   const [products, setProducts] = useState([]);
@@ -72,6 +72,12 @@ export function ProductsSection({ onNavigate }) {
                     src={getProductImage(product)}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    onError={(event) => {
+                      if (event.currentTarget.src.includes(PRODUCT_FALLBACK_IMAGE)) {
+                        return;
+                      }
+                      event.currentTarget.src = PRODUCT_FALLBACK_IMAGE;
+                    }}
                   />
                   <div className="absolute top-4 right-4 z-20">
                     <div

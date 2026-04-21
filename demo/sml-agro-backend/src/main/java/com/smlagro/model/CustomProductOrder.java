@@ -19,7 +19,9 @@ import jakarta.persistence.Table;
 @Table(name = "custom_inquiries", indexes = {
     @Index(name = "idx_custom_inquiry_number", columnList = "order_number"),
     @Index(name = "idx_custom_inquiry_status", columnList = "status"),
-    @Index(name = "idx_custom_inquiry_email", columnList = "email")
+    @Index(name = "idx_custom_inquiry_email", columnList = "email"),
+    @Index(name = "idx_custom_inquiry_created_at", columnList = "created_at"),
+    @Index(name = "idx_custom_inquiry_country", columnList = "country")
 })
 public class CustomProductOrder {
 
