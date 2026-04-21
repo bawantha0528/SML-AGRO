@@ -22,10 +22,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.smlagro.dto.request.InquiryRequest;
 import com.smlagro.dto.response.DashboardStatsResponse;
+import com.smlagro.dto.response.InquiryPrivateNoteResponse;
 import com.smlagro.dto.response.InquiryResponse;
 import com.smlagro.model.Inquiry;
+import com.smlagro.model.InquiryPrivateNote;
 import com.smlagro.model.InquiryStatus;
 import com.smlagro.model.Priority;
+import com.smlagro.repository.InquiryPrivateNoteRepository;
 import com.smlagro.repository.InquiryRepository;
 import com.smlagro.service.EmailService;
 import com.smlagro.service.InquiryService;
@@ -35,12 +38,16 @@ import com.smlagro.service.InquiryService;
 public class InquiryServiceImpl implements InquiryService {
 
     private final InquiryRepository inquiryRepository;
+    private final InquiryPrivateNoteRepository inquiryPrivateNoteRepository;
     private final EmailService emailService;
 
     // Constructor injection (DIP - depend on abstraction, not concrete class)
     @Autowired
-    public InquiryServiceImpl(InquiryRepository inquiryRepository, EmailService emailService) {
+    public InquiryServiceImpl(InquiryRepository inquiryRepository,
+            InquiryPrivateNoteRepository inquiryPrivateNoteRepository,
+            EmailService emailService) {
         this.inquiryRepository = inquiryRepository;
+        this.inquiryPrivateNoteRepository = inquiryPrivateNoteRepository;
         this.emailService = emailService;
     }
 
@@ -123,6 +130,58 @@ public class InquiryServiceImpl implements InquiryService {
         Inquiry inquiry = findOrThrow(id);
         inquiry.setNotes(notes);
         return InquiryResponse.fromEntity(inquiryRepository.save(inquiry));
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<InquiryPrivateNoteResponse> getPrivateNotes(Long inquiryId, String actorUsername) {
+        String actor = normalizeActor(actorUsername);
+        findOrThrow(inquiryId);
+        return inquiryPrivateNoteRepository.findByInquiryIdOrderByCreatedAtAsc(inquiryId).stream()
+                .map(note -> InquiryPrivateNoteResponse.fromEntity(note, canEditNote(note, actor)))
+                .toList();
+    }
+
+    @Override
+    public InquiryPrivateNoteResponse addPrivateNote(Long inquiryId, String actorUsername, String content) {
+        String actor = normalizeActor(actorUsername);
+        String safeContent = normalizeNoteContent(content);
+        Inquiry inquiry = findOrThrow(inquiryId);
+
+        InquiryPrivateNote note = new InquiryPrivateNote();
+        note.setInquiry(inquiry);
+        note.setAuthorUsername(actor);
+        note.setContent(safeContent);
+
+        InquiryPrivateNote saved = inquiryPrivateNoteRepository.save(note);
+        return InquiryPrivateNoteResponse.fromEntity(saved, canEditNote(saved, actor));
+    }
+
+    @Override
+    public InquiryPrivateNoteResponse updatePrivateNote(Long inquiryId, Long noteId, String actorUsername, String content) {
+        String actor = normalizeActor(actorUsername);
+        String safeContent = normalizeNoteContent(content);
+        InquiryPrivateNote note = findPrivateNoteOrThrow(inquiryId, noteId);
+
+        if (!canEditNote(note, actor)) {
+            throw new IllegalStateException("You can edit only your own notes created within the last 24 hours");
+        }
+
+        note.setContent(safeContent);
+        InquiryPrivateNote saved = inquiryPrivateNoteRepository.save(note);
+        return InquiryPrivateNoteResponse.fromEntity(saved, canEditNote(saved, actor));
+    }
+
+    @Override
+    public void deletePrivateNote(Long inquiryId, Long noteId, String actorUsername) {
+        String actor = normalizeActor(actorUsername);
+        InquiryPrivateNote note = findPrivateNoteOrThrow(inquiryId, noteId);
+
+        if (!canEditNote(note, actor)) {
+            throw new IllegalStateException("You can delete only your own notes created within the last 24 hours");
+        }
+
+        inquiryPrivateNoteRepository.delete(note);
     }
 
     @Override
@@ -418,6 +477,37 @@ public class InquiryServiceImpl implements InquiryService {
     private Inquiry findOrThrow(Long id) {
         return inquiryRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Inquiry not found: " + id));
+    }
+
+    private InquiryPrivateNote findPrivateNoteOrThrow(Long inquiryId, Long noteId) {
+        return inquiryPrivateNoteRepository.findByIdAndInquiryId(noteId, inquiryId)
+                .orElseThrow(() -> new RuntimeException("Private note not found: " + noteId));
+    }
+
+    private boolean canEditNote(InquiryPrivateNote note, String actorUsername) {
+        if (!note.getAuthorUsername().equalsIgnoreCase(actorUsername)) {
+            return false;
+        }
+        LocalDateTime cutoff = LocalDateTime.now().minusHours(24);
+        return note.getCreatedAt() != null && !note.getCreatedAt().isBefore(cutoff);
+    }
+
+    private String normalizeActor(String actorUsername) {
+        if (actorUsername == null || actorUsername.isBlank()) {
+            throw new IllegalArgumentException("X-Admin-User header is required");
+        }
+        return actorUsername.trim();
+    }
+
+    private String normalizeNoteContent(String content) {
+        if (content == null || content.isBlank()) {
+            throw new IllegalArgumentException("Note content is required");
+        }
+        String value = content.trim();
+        if (value.length() > 1000) {
+            throw new IllegalArgumentException("Note content must be 1000 characters or less");
+        }
+        return value;
     }
 
     private Inquiry mapRequestToEntity(InquiryRequest req) {

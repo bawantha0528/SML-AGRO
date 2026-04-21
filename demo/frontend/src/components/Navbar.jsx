@@ -80,14 +80,14 @@ export function Navbar({ onNavigate, currentPage }) {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out border-b ${scrolled ? 'bg-white/80 backdrop-blur-xl border-gray-200 shadow-[0_4px_20px_-2px_rgba(21,126,84,0.05)] py-4' : 'bg-transparent border-transparent py-8'}`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ease-in-out border-b ${scrolled ? 'bg-white/80 backdrop-blur-xl border-gray-200 shadow-[0_4px_20px_-2px_rgba(21,126,84,0.05)] py-3 md:py-4' : 'bg-transparent border-transparent py-3 md:py-8'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center">
           {/* Logo */}
           <button
             onClick={handleHomeClick}
-            className="flex items-center space-x-2 group"
+            className="flex items-center space-x-2 group min-h-[44px]"
           >
             <img
               src="/logo.png"
@@ -222,7 +222,8 @@ export function Navbar({ onNavigate, currentPage }) {
           <div className="md:hidden">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className="text-sml-dark hover:text-sml-green transition-colors"
+              className="text-sml-dark hover:text-sml-green transition-colors inline-flex items-center justify-center w-11 h-11 rounded-xl hover:bg-white/70"
+              aria-label={isOpen ? 'Close mobile menu' : 'Open mobile menu'}
             >
               {isOpen ? (
                 <X className="w-6 h-6" />
@@ -252,7 +253,7 @@ export function Navbar({ onNavigate, currentPage }) {
             }}
             className="md:hidden bg-sml-dark border-t border-gray-800"
           >
-            <div className="px-4 pt-2 pb-6 space-y-1">
+            <div className="px-4 pt-2 pb-6 space-y-1 max-h-[calc(100vh-88px)] overflow-y-auto">
               {/* HOME */}
               <button
                 onClick={() => {

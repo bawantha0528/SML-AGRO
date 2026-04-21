@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.smlagro.dto.request.InquiryRequest;
 import com.smlagro.dto.response.DashboardStatsResponse;
+import com.smlagro.dto.response.InquiryPrivateNoteResponse;
 import com.smlagro.dto.response.InquiryResponse;
 import com.smlagro.model.InquiryStatus;
 import com.smlagro.model.Priority;
@@ -27,6 +28,14 @@ public interface InquiryService {
     InquiryResponse updatePriority(Long id, Priority priority);
 
     InquiryResponse updateNotes(Long id, String notes);
+
+    List<InquiryPrivateNoteResponse> getPrivateNotes(Long inquiryId, String actorUsername);
+
+    InquiryPrivateNoteResponse addPrivateNote(Long inquiryId, String actorUsername, String content);
+
+    InquiryPrivateNoteResponse updatePrivateNote(Long inquiryId, Long noteId, String actorUsername, String content);
+
+    void deletePrivateNote(Long inquiryId, Long noteId, String actorUsername);
 
     InquiryResponse scheduleFollowup(Long id, LocalDate followupDate);
 

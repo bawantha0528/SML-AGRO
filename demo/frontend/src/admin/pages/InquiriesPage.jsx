@@ -9,10 +9,13 @@ import {
     Mail,
     MessageSquare,
     Package,
+    Pencil,
     Phone,
+    Plus,
     RefreshCw,
     Search,
     Tag,
+    Trash2,
     X
 } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
@@ -48,6 +51,7 @@ function PriorityBadge({ priority }) {
     return (
         <span className={`inline-flex items-center gap-1.5 text-xs font-semibold ${cfg.color}`}>
             <span className={`w-2 h-2 rounded-full ${cfg.dot}`} />
+    Plus,
             {cfg.label}
         </span>
     );
@@ -87,9 +91,32 @@ function FollowupBadge({ inquiry }) {
 }
 
 // ── InquiryDetailPanel ──
-function InquiryDetailPanel({ inquiry, onClose, onStatusChange, onNoteSave, onFollowupSave, onFollowupComplete }) {
+function InquiryDetailPanel({
+    inquiry,
+    onClose,
+    onStatusChange,
+    onNoteSave,
+    onFollowupSave,
+    onFollowupComplete,
+    currentAdminUser,
+    onLoadPrivateNotes,
+    onAddPrivateNote,
+    onUpdatePrivateNote,
+    onDeletePrivateNote,
+}) {
     const [notes, setNotes] = useState(inquiry.notes || '');
     const [followupDateInput, setFollowupDateInput] = useState(inquiry.followupDate || '');
+    const [privateNotes, setPrivateNotes] = useState([]);
+    const [privateNotesLoading, setPrivateNotesLoading] = useState(false);
+    const [privateNotesError, setPrivateNotesError] = useState('');
+    const [showAddPrivateNote, setShowAddPrivateNote] = useState(false);
+    const [newPrivateNoteContent, setNewPrivateNoteContent] = useState('');
+    const [savingPrivateNote, setSavingPrivateNote] = useState(false);
+    const [editingPrivateNoteId, setEditingPrivateNoteId] = useState(null);
+    const [editingPrivateNoteContent, setEditingPrivateNoteContent] = useState('');
+    const [savingEditPrivateNote, setSavingEditPrivateNote] = useState(false);
+    const [deletingPrivateNoteId, setDeletingPrivateNoteId] = useState(null);
+    const [privateNoteMsg, setPrivateNoteMsg] = useState('');
     const [saving, setSaving] = useState(false);
     const [savingStatus, setSavingStatus] = useState(false);
     const [savingFollowup, setSavingFollowup] = useState(false);
@@ -99,11 +126,39 @@ function InquiryDetailPanel({ inquiry, onClose, onStatusChange, onNoteSave, onFo
 
     const STATUSES = Object.keys(STATUS_CONFIG);
     const PRIORITIES = Object.keys(PRIORITY_CONFIG);
+    const PRIVATE_NOTE_CHAR_LIMIT = 1000;
+    const canSeePrivateNotes = Boolean(currentAdminUser?.username);
 
     useEffect(() => {
         setNotes(inquiry.notes || '');
         setFollowupDateInput(inquiry.followupDate || '');
+        setShowAddPrivateNote(false);
+        setNewPrivateNoteContent('');
+        setEditingPrivateNoteId(null);
+        setEditingPrivateNoteContent('');
+        setPrivateNoteMsg('');
     }, [inquiry]);
+
+    const loadPrivateNotes = useCallback(async () => {
+        if (!canSeePrivateNotes) {
+            setPrivateNotes([]);
+            return;
+        }
+        setPrivateNotesLoading(true);
+        setPrivateNotesError('');
+        try {
+            const data = await onLoadPrivateNotes(inquiry.id);
+            setPrivateNotes(Array.isArray(data) ? data : []);
+        } catch {
+            setPrivateNotesError('Failed to load private notes.');
+        } finally {
+            setPrivateNotesLoading(false);
+        }
+    }, [canSeePrivateNotes, inquiry.id, onLoadPrivateNotes]);
+
+    useEffect(() => {
+        loadPrivateNotes();
+    }, [loadPrivateNotes]);
 
     const handleSaveNotes = async () => {
         setSaving(true);
@@ -156,6 +211,89 @@ function InquiryDetailPanel({ inquiry, onClose, onStatusChange, onNoteSave, onFo
         } finally {
             setCompletingFollowup(false);
             setTimeout(() => setFollowupMsg(''), 3000);
+        }
+    };
+
+    const handleAddPrivateNote = async () => {
+        const value = newPrivateNoteContent.trim();
+        if (!value) {
+            setPrivateNoteMsg('❌ Note content is required.');
+            return;
+        }
+        if (value.length > PRIVATE_NOTE_CHAR_LIMIT) {
+            setPrivateNoteMsg(`❌ Note cannot exceed ${PRIVATE_NOTE_CHAR_LIMIT} characters.`);
+            return;
+        }
+
+        setSavingPrivateNote(true);
+        setPrivateNoteMsg('');
+        try {
+            await onAddPrivateNote(inquiry.id, value);
+            setNewPrivateNoteContent('');
+            setShowAddPrivateNote(false);
+            setPrivateNoteMsg('✅ Private note added.');
+            await loadPrivateNotes();
+        } catch {
+            setPrivateNoteMsg('❌ Failed to add private note.');
+        } finally {
+            setSavingPrivateNote(false);
+            setTimeout(() => setPrivateNoteMsg(''), 3000);
+        }
+    };
+
+    const startEditPrivateNote = (note) => {
+        setEditingPrivateNoteId(note.id);
+        setEditingPrivateNoteContent(note.content || '');
+        setPrivateNoteMsg('');
+    };
+
+    const cancelEditPrivateNote = () => {
+        setEditingPrivateNoteId(null);
+        setEditingPrivateNoteContent('');
+    };
+
+    const handleEditPrivateNote = async (noteId) => {
+        const value = editingPrivateNoteContent.trim();
+        if (!value) {
+            setPrivateNoteMsg('❌ Note content is required.');
+            return;
+        }
+        if (value.length > PRIVATE_NOTE_CHAR_LIMIT) {
+            setPrivateNoteMsg(`❌ Note cannot exceed ${PRIVATE_NOTE_CHAR_LIMIT} characters.`);
+            return;
+        }
+
+        setSavingEditPrivateNote(true);
+        setPrivateNoteMsg('');
+        try {
+            await onUpdatePrivateNote(inquiry.id, noteId, value);
+            setEditingPrivateNoteId(null);
+            setEditingPrivateNoteContent('');
+            setPrivateNoteMsg('✅ Private note updated.');
+            await loadPrivateNotes();
+        } catch {
+            setPrivateNoteMsg('❌ Failed to update private note.');
+        } finally {
+            setSavingEditPrivateNote(false);
+            setTimeout(() => setPrivateNoteMsg(''), 3000);
+        }
+    };
+
+    const handleDeletePrivateNote = async (noteId) => {
+        setDeletingPrivateNoteId(noteId);
+        setPrivateNoteMsg('');
+        try {
+            await onDeletePrivateNote(inquiry.id, noteId);
+            setPrivateNoteMsg('✅ Private note deleted.');
+            if (editingPrivateNoteId === noteId) {
+                cancelEditPrivateNote();
+            }
+            await loadPrivateNotes();
+        } catch {
+            setPrivateNoteMsg('❌ Failed to delete private note.');
+        } finally {
+            setDeletingPrivateNoteId(null);
+            setTimeout(() => setPrivateNoteMsg(''), 3000);
         }
     };
 
@@ -349,6 +487,140 @@ function InquiryDetailPanel({ inquiry, onClose, onStatusChange, onNoteSave, onFo
                             </button>
                         </div>
                     </div>
+
+                    {canSeePrivateNotes && (
+                        <div>
+                            <div className="flex items-center justify-between mb-3">
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wider flex items-center gap-2">
+                                    <MessageSquare className="w-3.5 h-3.5" /> Private Conversation Notes
+                                </p>
+                                <button
+                                    onClick={() => setShowAddPrivateNote((prev) => !prev)}
+                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-sml-green text-white hover:bg-sml-dark"
+                                >
+                                    <Plus className="w-3.5 h-3.5" />
+                                    Add Note
+                                </button>
+                            </div>
+
+                            {showAddPrivateNote && (
+                                <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 mb-3">
+                                    <textarea
+                                        value={newPrivateNoteContent}
+                                        onChange={(event) => setNewPrivateNoteContent(event.target.value.slice(0, PRIVATE_NOTE_CHAR_LIMIT))}
+                                        placeholder="Write private conversation details..."
+                                        rows={4}
+                                        className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none text-sm resize-none bg-white"
+                                    />
+                                    <div className="flex items-center justify-between mt-2">
+                                        <span className="text-xs text-gray-500">
+                                            {newPrivateNoteContent.length}/{PRIVATE_NOTE_CHAR_LIMIT}
+                                        </span>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => setShowAddPrivateNote(false)}
+                                                className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100"
+                                            >
+                                                Cancel
+                                            </button>
+                                            <button
+                                                onClick={handleAddPrivateNote}
+                                                disabled={savingPrivateNote}
+                                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-sml-green text-white hover:bg-sml-dark disabled:opacity-60"
+                                            >
+                                                {savingPrivateNote ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                                Save Note
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {privateNotesError && (
+                                <div className="text-xs text-red-600 mb-2">{privateNotesError}</div>
+                            )}
+
+                            {privateNotesLoading ? (
+                                <div className="flex items-center gap-2 text-xs text-gray-400">
+                                    <Loader2 className="w-4 h-4 animate-spin text-sml-green" /> Loading notes...
+                                </div>
+                            ) : privateNotes.length === 0 ? (
+                                <div className="text-xs text-gray-400 bg-gray-50 border border-gray-100 rounded-xl p-3">
+                                    No private notes yet.
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {privateNotes.map((note) => {
+                                        const isEditing = editingPrivateNoteId === note.id;
+                                        const editCharCount = isEditing ? editingPrivateNoteContent.length : 0;
+                                        return (
+                                            <div key={note.id} className="bg-gray-50 border border-gray-200 rounded-xl p-3">
+                                                <div className="flex items-start justify-between gap-3">
+                                                    <div className="text-xs text-gray-500">
+                                                        <span className="font-bold text-gray-700">{note.authorUsername}</span> · {fmt(note.createdAt)}
+                                                        {note.updatedAt ? ` · updated ${fmt(note.updatedAt)}` : ''}
+                                                    </div>
+                                                    {note.canEdit && !isEditing && (
+                                                        <div className="flex items-center gap-2">
+                                                            <button
+                                                                onClick={() => startEditPrivateNote(note)}
+                                                                className="inline-flex items-center gap-1 text-xs font-semibold text-sml-green hover:text-sml-dark"
+                                                            >
+                                                                <Pencil className="w-3.5 h-3.5" /> Edit
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleDeletePrivateNote(note.id)}
+                                                                disabled={deletingPrivateNoteId === note.id}
+                                                                className="inline-flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700 disabled:opacity-60"
+                                                            >
+                                                                {deletingPrivateNoteId === note.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Trash2 className="w-3.5 h-3.5" />} Delete
+                                                            </button>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                {isEditing ? (
+                                                    <div className="mt-2">
+                                                        <textarea
+                                                            value={editingPrivateNoteContent}
+                                                            onChange={(event) => setEditingPrivateNoteContent(event.target.value.slice(0, PRIVATE_NOTE_CHAR_LIMIT))}
+                                                            rows={3}
+                                                            className="w-full px-3 py-2.5 rounded-lg border border-gray-200 focus:ring-2 focus:ring-sml-green focus:border-transparent outline-none text-sm resize-none bg-white"
+                                                        />
+                                                        <div className="flex items-center justify-between mt-2">
+                                                            <span className="text-xs text-gray-500">{editCharCount}/{PRIVATE_NOTE_CHAR_LIMIT}</span>
+                                                            <div className="flex items-center gap-2">
+                                                                <button
+                                                                    onClick={cancelEditPrivateNote}
+                                                                    className="px-3 py-1.5 rounded-lg border border-gray-200 text-xs font-semibold text-gray-600 hover:bg-gray-100"
+                                                                >
+                                                                    Cancel
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleEditPrivateNote(note.id)}
+                                                                    disabled={savingEditPrivateNote}
+                                                                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-sml-green text-white hover:bg-sml-dark disabled:opacity-60"
+                                                                >
+                                                                    {savingEditPrivateNote ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
+                                                                    Save
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <p className="mt-2 text-sm text-gray-700 whitespace-pre-wrap">{note.content}</p>
+                                                )}
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            )}
+
+                            <span className={`text-xs mt-2 block ${privateNoteMsg.startsWith('✅') ? 'text-green-600' : 'text-red-500'}`}>
+                                {privateNoteMsg}
+                            </span>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
@@ -364,6 +636,14 @@ export function InquiriesPage() {
     const [search, setSearch] = useState('');
     const [searchInput, setSearchInput] = useState('');
     const [selectedInquiry, setSelectedInquiry] = useState(null);
+    const [currentAdminUser] = useState(() => {
+        try {
+            const stored = sessionStorage.getItem('adminUser');
+            return stored ? JSON.parse(stored) : null;
+        } catch {
+            return null;
+        }
+    });
 
     const fetchInquiries = useCallback(async () => {
         setLoading(true);
@@ -440,6 +720,74 @@ export function InquiriesPage() {
         const json = await res.json();
         setInquiries(prev => prev.map(i => i.id === id ? json.data : i));
         setSelectedInquiry(prev => prev?.id === id ? json.data : prev);
+    };
+
+    const requireActorUsername = () => {
+        const actor = currentAdminUser?.username;
+        if (!actor) {
+            throw new Error('Missing admin user session');
+        }
+        return actor;
+    };
+
+    const loadPrivateNotes = async (inquiryId) => {
+        const actor = requireActorUsername();
+        const res = await fetch(`/api/admin/inquiries/${inquiryId}/private-notes`, {
+            headers: { 'X-Admin-User': actor },
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || 'Failed to load private notes');
+        }
+        return json.data || [];
+    };
+
+    const addPrivateNote = async (inquiryId, content) => {
+        const actor = requireActorUsername();
+        const res = await fetch(`/api/admin/inquiries/${inquiryId}/private-notes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-User': actor,
+            },
+            body: JSON.stringify({ content }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || 'Failed to add private note');
+        }
+        return json.data;
+    };
+
+    const updatePrivateNote = async (inquiryId, noteId, content) => {
+        const actor = requireActorUsername();
+        const res = await fetch(`/api/admin/inquiries/${inquiryId}/private-notes/${noteId}`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Admin-User': actor,
+            },
+            body: JSON.stringify({ content }),
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || 'Failed to update private note');
+        }
+        return json.data;
+    };
+
+    const deletePrivateNote = async (inquiryId, noteId) => {
+        const actor = requireActorUsername();
+        const res = await fetch(`/api/admin/inquiries/${inquiryId}/private-notes/${noteId}`, {
+            method: 'DELETE',
+            headers: {
+                'X-Admin-User': actor,
+            },
+        });
+        const json = await res.json();
+        if (!res.ok || !json.success) {
+            throw new Error(json.message || 'Failed to delete private note');
+        }
     };
 
     const fmt = (dt) => dt ? new Date(dt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
@@ -652,6 +1000,11 @@ export function InquiriesPage() {
                     onNoteSave={handleNoteSave}
                     onFollowupSave={handleFollowupSave}
                     onFollowupComplete={handleFollowupComplete}
+                    currentAdminUser={currentAdminUser}
+                    onLoadPrivateNotes={loadPrivateNotes}
+                    onAddPrivateNote={addPrivateNote}
+                    onUpdatePrivateNote={updatePrivateNote}
+                    onDeletePrivateNote={deletePrivateNote}
                 />
             )}
         </div>
