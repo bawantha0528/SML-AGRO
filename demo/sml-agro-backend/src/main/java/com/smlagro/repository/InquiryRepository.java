@@ -1,5 +1,5 @@
 package com.smlagro.repository;
-
+// create inquiry repository //
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
