@@ -87,6 +87,10 @@ export function HeroSection({ onNavigate }) {
               <img
                 src="/b-coirproducts.jpg"
                 alt="Coir Products"
+                data-priority="high"
+                loading="eager"
+                fetchPriority="high"
+                decoding="sync"
                 className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
               />
 

@@ -20,11 +20,17 @@
     scroll-behavior: smooth;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   body {
     @apply bg-sml-cream text-sml-text font-sans;
     letter-spacing: -0.01em;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -115,4 +121,49 @@
 
 .text-shadow {
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .text-xs {
+    font-size: 0.8125rem;
+    line-height: 1.2rem;
+  }
+
+  .text-sm {
+    font-size: 0.9375rem;
+    line-height: 1.4rem;
+  }
+}
+
+@media (pointer: coarse) {
+  a,
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  summary {
+    min-height: 44px;
+  }
+
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'] {
+    min-width: 44px;
+  }
 }

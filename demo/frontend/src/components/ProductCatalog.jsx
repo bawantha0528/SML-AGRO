@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { ArrowLeft, Check } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { formatSpecifications } from '../utils/formatSpecifications';
-import { getProductImage } from '../utils/productImages';
+import { getProductImage, PRODUCT_FALLBACK_IMAGE } from '../utils/productImages';
 
 export function ProductCatalog({ onNavigate }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -95,6 +95,12 @@ export function ProductCatalog({ onNavigate }) {
                     src={getProductImage(product)}
                     alt={product.name}
                     className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    onError={(event) => {
+                      if (event.currentTarget.src.includes(PRODUCT_FALLBACK_IMAGE)) {
+                        return;
+                      }
+                      event.currentTarget.src = PRODUCT_FALLBACK_IMAGE;
+                    }}
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-sml-dark/80 via-sml-dark/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                 </div>
