@@ -1,134 +1,112 @@
-import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Save, Send, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { getCustomCollectionImage } from '../utils/productImages';
 
 export function ProductCustomization({ onNavigate }) {
-  const [config, setConfig] = useState({
-    productType: 'Coir Mats',
-    dimensions: '1m x 10m',
-    thickness: '10mm',
-    quantity: 100,
-    customNotes: '',
-  });
+  const [customProducts, setCustomProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setLoading(true);
+    fetch('/api/public/custom-products')
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Failed to fetch custom products');
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setCustomProducts(Array.isArray(data) ? data : []);
+        setError('');
+      })
+      .catch((error) => {
+        console.error(error);
+        setError('Failed to load customized products.');
+      })
+      .finally(() => setLoading(false));
+  }, []);
 
   return (
-    <section id="customize" className="py-12 bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
-          {onNavigate && (
-            <button
-              onClick={() => onNavigate('home')}
-              className="inline-flex items-center text-sm text-gray-500 hover:text-sml-green transition-colors mb-6 group"
-            >
-              <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-              Back to Home
-            </button>
-          )}
+    <section className="py-24 bg-[#FAFAF7] min-h-screen relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-sml-amber/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+      <div className="absolute bottom-0 left-0 w-[40rem] h-[40rem] bg-sml-green/5 rounded-full blur-[100px] pointer-events-none -z-10" />
 
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-sml-dark mb-6">
-            Customize Your Order
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 stagger-fade">
+        <div className="mb-10">
+          <button
+            onClick={() => onNavigate('home')}
+            className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-sml-text/60 hover:text-sml-green transition-colors mb-8 group"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
+            Back to Home
+          </button>
+          <h2 className="text-4xl md:text-6xl font-serif font-bold text-sml-dark mb-4 tracking-tight">
+            Customized <span className="text-gradient">Products</span>
           </h2>
-          <p className="text-gray-600 text-lg">
-            Configure your product specifications exactly as you need them.
+          <p className="text-lg text-sml-text/70 max-w-3xl leading-relaxed">
+            This page is only for customizable coir craft products such as mats, bags,
+            hats, baskets, statues, and wall art.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Configuration Panel */}
-          <div className="lg:col-span-2 bg-sml-cream rounded-2xl p-8 shadow-sm border border-sml-cream-dark">
-            <div className="mb-8">
-              <label className="block text-sm font-bold text-sml-dark uppercase tracking-wider mb-3">
-                Select Product Type
-              </label>
-              <select
-                value={config.productType}
-                onChange={(e) => setConfig({ ...config, productType: e.target.value })}
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green focus:border-transparent"
-              >
-                <option>Coir Mats</option>
-                <option>Grow Bags</option>
-                <option>Coir Pith Blocks</option>
-                <option>Geotextiles</option>
-              </select>
-            </div>
+        <div className="mb-8">
+          <h3 className="text-2xl font-serif font-bold text-sml-dark">Custom Coir Collection</h3>
+          <p className="text-sm text-gray-500 mt-1">Choose a style and place your custom order on the dedicated custom product page.</p>
+        </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Dimensions
-                </label>
-                <input
-                  type="text"
-                  value={config.dimensions}
-                  onChange={(e) => setConfig({ ...config, dimensions: e.target.value })}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green"
+        {loading && <div className="text-sm text-gray-500 mb-4">Loading customized products...</div>}
+        {error && <div className="text-sm text-red-600 mb-4">{error}</div>}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {customProducts.map((item, index) => (
+            <motion.div
+              key={item.id}
+              initial={{ opacity: 0, y: 14 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.35, delay: index * 0.05 }}
+              className="group surface-card flex flex-col overflow-hidden relative"
+            >
+              <div className="h-48 relative overflow-hidden bg-black/5">
+                <img
+                  src={item.imageUrl || getCustomCollectionImage(item.name)}
+                  alt={item.name}
+                  className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
                 />
+                <div className="absolute inset-0 bg-gradient-to-t from-sml-dark/80 via-sml-dark/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
               </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Thickness
-                </label>
-                <input
-                  type="text"
-                  value={config.thickness}
-                  onChange={(e) => setConfig({ ...config, thickness: e.target.value })}
-                  className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green"
-                />
+              <div className="p-6 relative z-20 bg-white">
+                <h4 className="text-lg font-bold text-sml-dark group-hover:text-sml-green transition-colors duration-300">{item.name}</h4>
+                <p className="text-sml-text/70 text-sm mt-2 leading-relaxed">{item.shortDescription || 'Customizable coir product'}</p>
+                <button
+                  onClick={() =>
+                    onNavigate('product', {
+                      name: item.name,
+                      productType: item.name,
+                      productKind: 'custom',
+                      description: item.shortDescription || 'Customizable coir product',
+                      category: 'CUSTOM',
+                      imageUrl: item.imageUrl || getCustomCollectionImage(item.name),
+                      price: 0,
+                      unit: 'piece',
+                      stockQuantity: null,
+                    })
+                  }
+                  className="mt-6 w-full bg-sml-dark text-white py-3 rounded-lg text-xs uppercase tracking-widest font-bold hover:bg-sml-green transition-all duration-300 inline-flex items-center justify-center group/btn"
+                >
+                  Open Product Page
+                  <ArrowRight className="w-4 h-4 ml-1.5 group-hover/btn:translate-x-1 transition-transform" />
+                </button>
               </div>
+            </motion.div>
+          ))}
+          {!loading && customProducts.length === 0 && (
+            <div className="col-span-full text-center py-10 text-gray-500">
+              No customizable products are available yet.
             </div>
-
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Quantity (Units)
-              </label>
-              <input
-                type="number"
-                min="1"
-                value={config.quantity}
-                onChange={(e) => setConfig({ ...config, quantity: parseInt(e.target.value) })}
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green"
-              />
-            </div>
-
-            <div className="mb-8">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Custom Notes
-              </label>
-              <textarea
-                rows="4"
-                value={config.customNotes}
-                onChange={(e) => setConfig({ ...config, customNotes: e.target.value })}
-                placeholder="Any additional requirements..."
-                className="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 focus:ring-2 focus:ring-sml-green"
-              />
-            </div>
-
-            <button className="w-full bg-sml-dark text-sml-cream py-3 rounded-lg hover:bg-gray-800 font-bold flex items-center justify-center space-x-2">
-              <Send className="w-4 h-4" />
-              <span>Submit Configuration</span>
-            </button>
-          </div>
-
-          {/* Summary Panel */}
-          <div className="bg-sml-cream rounded-2xl p-8 h-fit">
-            <h3 className="text-lg font-bold text-sml-dark mb-6">Order Summary</h3>
-            <div className="space-y-4 mb-8">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Product:</span>
-                <span className="font-bold text-sml-dark">{config.productType}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Quantity:</span>
-                <span className="font-bold text-sml-dark">{config.quantity} units</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Est. Price:</span>
-                <span className="font-bold text-sml-green text-lg">
-                  ${config.quantity * 12.50}
-                </span>
-              </div>
-            </div>
-          </div>
+          )}
         </div>
       </div>
     </section>

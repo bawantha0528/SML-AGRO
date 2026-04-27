@@ -1,23 +1,45 @@
-import React, { useState } from 'react';
 import {
+    Bell,
     LayoutDashboard,
+    LogOut,
+    Menu,
     MessageSquare,
     Package,
-    Users,
-    LogOut,
-    Menu
+    Shield,
+    SwatchBook,
+    Users
 } from 'lucide-react';
-import { LoginPage } from './pages/LoginPage';
+import { useEffect, useState } from 'react';
+import { CustomOrdersPage } from './pages/CustomOrdersPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { InquiriesPage } from './pages/InquiriesPage';
+import { LoginPage } from './pages/LoginPage';
 import { ProductsPage } from './pages/ProductsPage';
 import { UsersPage } from './pages/UsersPage';
 
 export function AdminLayout() {
     const [activeTab, setActiveTab] = useState('dashboard');
-    const [isAuthenticated, setIsAuthenticated] = useState(false);
-    const [user, setUser] = useState(null);
+    // Restore session from sessionStorage so F5 doesn't log the admin out
+    const [isAuthenticated, setIsAuthenticated] = useState(() => {
+        const stored = sessionStorage.getItem('adminUser');
+        return !!stored;
+    });
+    const [user, setUser] = useState(() => {
+        const stored = sessionStorage.getItem('adminUser');
+        return stored ? JSON.parse(stored) : null;
+    });
     const [sidebarOpen, setSidebarOpen] = useState(true);
+    const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768) {
+                setMobileSidebarOpen(false);
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     if (!isAuthenticated) {
         return (
@@ -34,10 +56,12 @@ export function AdminLayout() {
         { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
         { id: 'inquiries', label: 'Inquiries', icon: MessageSquare },
         { id: 'products', label: 'Products', icon: Package },
+        { id: 'customOrders', label: 'Custom Inquiries', icon: SwatchBook },
         { id: 'users', label: 'Users', icon: Users },
     ];
 
     const handleLogout = () => {
+        sessionStorage.removeItem('adminUser');
         setIsAuthenticated(false);
         setUser(null);
     };
@@ -47,16 +71,27 @@ export function AdminLayout() {
             case 'dashboard': return <DashboardPage />;
             case 'inquiries': return <InquiriesPage />;
             case 'products': return <ProductsPage />;
+            case 'customOrders': return <CustomOrdersPage />;
             case 'users': return <UsersPage />;
             default: return <DashboardPage />;
         }
     };
 
+    const activeLabel = menuItems.find((m) => m.id === activeTab)?.label || 'Dashboard';
+
     return (
-        <div className="flex h-screen bg-gray-50 overflow-hidden font-sans">
+        <div className="flex h-screen bg-sml-cream overflow-hidden font-sans">
+            {mobileSidebarOpen && (
+                <button
+                    aria-label="Close sidebar"
+                    onClick={() => setMobileSidebarOpen(false)}
+                    className="fixed inset-0 bg-black/45 z-30 md:hidden"
+                />
+            )}
+
             {/* Sidebar */}
             <aside
-                className={`bg-sml-dark text-white flex flex-col transition-all duration-300 ${sidebarOpen ? 'w-64' : 'w-20'
+                className={`fixed md:static inset-y-0 left-0 z-40 bg-sml-dark text-white flex flex-col transition-all duration-300 border-r border-white/10 w-72 md:w-auto ${mobileSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'} ${sidebarOpen ? 'md:w-64' : 'md:w-20'
                     }`}
             >
                 <div className="h-16 flex items-center justify-center border-b border-gray-700">
@@ -67,14 +102,17 @@ export function AdminLayout() {
                     )}
                 </div>
 
-                <nav className="flex-1 py-6 space-y-2">
+                <nav className="flex-1 py-6 space-y-2 px-2">
                     {menuItems.map((item) => (
                         <button
                             key={item.id}
-                            onClick={() => setActiveTab(item.id)}
-                            className={`w-full flex items-center px-6 py-3 transition-colors ${activeTab === item.id
-                                ? 'bg-sml-green text-white border-r-4 border-white'
-                                : 'text-gray-400 hover:bg-gray-800 hover:text-white'
+                            onClick={() => {
+                                setActiveTab(item.id);
+                                setMobileSidebarOpen(false);
+                            }}
+                            className={`w-full flex items-center px-4 py-3 rounded-xl transition-colors ${activeTab === item.id
+                                ? 'bg-sml-green text-white shadow-lg'
+                                : 'text-gray-300 hover:bg-gray-800 hover:text-white'
                                 }`}
                         >
                             <item.icon className="w-5 h-5 min-w-[20px]" />
@@ -86,7 +124,7 @@ export function AdminLayout() {
                 <div className="p-4 border-t border-gray-700">
                     <button
                         onClick={handleLogout}
-                        className="w-full flex items-center px-4 py-2 text-red-400 hover:bg-gray-800 rounded-lg transition-colors"
+                        className="w-full flex items-center px-4 py-3 text-sml-green hover:bg-gray-800 rounded-lg transition-colors"
                     >
                         <LogOut className="w-5 h-5 min-w-[20px]" />
                         {sidebarOpen && <span className="ml-4 font-medium">Logout</span>}
@@ -97,27 +135,58 @@ export function AdminLayout() {
             {/* Main Content */}
             <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
                 {/* Top Header */}
-                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10">
+                <header className="h-16 bg-white shadow-sm flex items-center justify-between px-3 sm:px-6 z-10 border-b border-gray-100">
                     <button
-                        onClick={() => setSidebarOpen(!sidebarOpen)}
-                        className="p-2 rounded-lg hover:bg-gray-100 text-gray-600 focus:outline-none"
+                        onClick={() => setMobileSidebarOpen((prev) => !prev)}
+                        className="md:hidden p-2 rounded-lg hover:bg-gray-100 text-gray-600 focus:outline-none"
+                        aria-label="Toggle sidebar"
                     >
                         <Menu className="w-6 h-6" />
                     </button>
 
-                    <div className="flex items-center space-x-4">
+                    <button
+                        onClick={() => setSidebarOpen(!sidebarOpen)}
+                        className="hidden md:inline-flex p-2 rounded-lg hover:bg-gray-100 text-gray-600 focus:outline-none"
+                        aria-label="Collapse sidebar"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+
+                    <div className="hidden md:flex items-center gap-3 mr-auto ml-4">
+                        <div className="w-8 h-8 rounded-lg bg-sml-green/10 flex items-center justify-center text-sml-green">
+                            <Shield className="w-4 h-4" />
+                        </div>
+                        <div>
+                            <p className="text-xs uppercase tracking-wider text-gray-400">Admin Workspace</p>
+                            <p className="text-sm font-semibold text-gray-800">{activeLabel}</p>
+                        </div>
+                    </div>
+
+                    <div className="flex items-center space-x-2 sm:space-x-3">
+                        <button className="hidden sm:inline-flex w-9 h-9 rounded-lg border border-gray-200 items-center justify-center text-gray-500 hover:bg-gray-50">
+                            <Bell className="w-4 h-4" />
+                        </button>
                         <div className="text-right hidden sm:block">
                             <p className="text-sm font-bold text-gray-800">{user?.username}</p>
                             <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
                         </div>
-                        <div className="w-10 h-10 bg-sml-green rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                        <div className="w-10 h-10 bg-sml-green rounded-full flex items-center justify-center text-white font-bold text-base sm:text-lg shadow-md">
                             {user?.username.charAt(0).toUpperCase()}
                         </div>
+                        <div className="w-px h-8 bg-gray-200 mx-1" />
+                        <button
+                            onClick={handleLogout}
+                            title="Logout"
+                            className="flex items-center gap-2 px-3 py-2 rounded-lg text-sml-green hover:bg-green-50 hover:text-green-700 border border-transparent hover:border-green-200 transition-all duration-200 font-medium text-sm"
+                        >
+                            <LogOut className="w-4 h-4" />
+                            <span className="hidden sm:inline">Logout</span>
+                        </button>
                     </div>
                 </header>
 
                 {/* Page Content */}
-                <main className="flex-1 overflow-auto p-6 md:p-8">
+                <main className="flex-1 overflow-auto p-4 sm:p-5 md:p-8 bg-gradient-to-br from-[#f7f4ee] to-[#f2ebde]">
                     {renderContent()}
                 </main>
             </div>

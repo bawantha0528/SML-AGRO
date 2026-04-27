@@ -1,5 +1,5 @@
 /* @import url() FONT IMPORTS MUST ALWAYS BE AT THE VERY TOP OF THIS FILE, ABOVE THE TAILWIND IMPORTS — DO NOT DELETE THIS COMMENT */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800;900&display=swap');
 
 /* CRITICAL: THE FOLLOWING TAILWIND DIRECTIVES MUST NEVER BE DELETED OR REORDERED — DO NOT DELETE THIS COMMENT */
 @tailwind base;
@@ -8,43 +8,162 @@
 
 /* END TAILWIND IMPORTS — ALL OTHER CSS MUST GO BELOW THIS LINE */
 
-:root {
-  --color-dark: #1C1A17;
-  --color-cream: #FDF5E6;
-  --color-cream-dark: #F0DFC0;
-  --color-green: #2E7D32;
-  --color-green-light: #4CAF50;
-  --color-amber: #C8A45C;
-  --color-text-dark: #2D2418;
-  --color-text-light: #F5E6C8;
+@layer base {
+  :root {
+    --shadow-soft: 0 4px 20px -2px rgba(21, 126, 84, 0.05);
+    --shadow-strong: 0 10px 40px -4px rgba(21, 126, 84, 0.15);
+    --radius-xl: 1.5rem;
+    --radius-2xl: 2rem;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  body {
+    @apply bg-sml-cream text-sml-text font-sans;
+    letter-spacing: -0.01em;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-serif;
+    letter-spacing: -0.02em;
+  }
+
+  ::selection {
+    @apply bg-sml-green text-white;
+  }
+
+  a, button {
+    @apply transition-all duration-300 ease-in-out;
+  }
 }
-html {
-  scroll-behavior: smooth;
+
+@layer utilities {
+  .glass-panel {
+    @apply bg-white/70 backdrop-blur-xl border border-white/40 shadow-soft;
+  }
+  
+  .glass-panel-dark {
+    @apply bg-sml-dark/85 backdrop-blur-xl border border-white/10 shadow-strong;
+  }
+
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-sml-green to-sml-green-light;
+  }
+  
+  .text-gradient-gold {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-sml-amber via-[#e6b165] to-sml-amber;
+  }
+
+  .surface-card {
+    @apply bg-white border border-sml-cream-dark/30 rounded-2xl shadow-soft transition-all duration-300;
+  }
+  
+  .surface-card:hover {
+    @apply shadow-strong -translate-y-1;
+  }
+
+  .admin-table th {
+    @apply font-bold text-gray-500 tracking-wider;
+  }
+
+  .admin-table tr:hover {
+    @apply bg-gray-50;
+  }
+
+  .stagger-fade {
+    animation: fadeRise 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 }
-body {
-  background-color: var(--color-cream);
-  color: var(--color-text-dark);
-  font-family: 'Inter', sans-serif;
+
+@keyframes fadeRise {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
-h1, h2, h3, h4, h5, h6 {
-  font-family: 'Playfair Display', serif;
-}
+
 /* Custom Scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: var(--color-cream);
+  background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--color-dark);
-  border-radius: 5px;
-  border: 2px solid var(--color-cream);
+  @apply bg-sml-cream-dark rounded-full border-[2px] border-solid border-sml-cream transition-colors;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-green);
+  @apply bg-sml-green/50;
 }
+
+@keyframes slideIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+
+.animate-slide-in {
+  animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
 .text-shadow {
   text-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+}
+
+@media (max-width: 768px) {
+  .text-xs {
+    font-size: 0.8125rem;
+    line-height: 1.2rem;
+  }
+
+  .text-sm {
+    font-size: 0.9375rem;
+    line-height: 1.4rem;
+  }
+}
+
+@media (pointer: coarse) {
+  a,
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'],
+  summary {
+    min-height: 44px;
+  }
+
+  button,
+  [role='button'],
+  input[type='button'],
+  input[type='submit'],
+  input[type='reset'] {
+    min-width: 44px;
+  }
+}

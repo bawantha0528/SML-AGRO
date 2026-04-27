@@ -1,6 +1,8 @@
-import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Download, X, ShoppingBag, Check, ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Check } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { formatSpecifications } from '../utils/formatSpecifications';
+import { getProductImage, PRODUCT_FALLBACK_IMAGE } from '../utils/productImages';
 
 export function ProductCatalog({ onNavigate }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -30,47 +32,42 @@ export function ProductCatalog({ onNavigate }) {
     }
   };
 
-  const handleInquiry = () => {
-    onNavigate('home');
-    setTimeout(() => {
-      const el = document.getElementById('contact');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    }, 300);
-  };
-
   const filteredProducts = selectedCategory === 'All'
     ? products
     : products.filter(p => p.category === selectedCategory);
 
   return (
-    <section id="catalog" className="py-12 bg-white min-h-screen">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="mb-12">
+    <section id="catalog" className="py-24 bg-[#FAFAF7] min-h-screen relative overflow-hidden">
+      <div className="absolute top-0 right-0 w-[40rem] h-[40rem] bg-sml-amber/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+      <div className="absolute bottom-0 left-0 w-[40rem] h-[40rem] bg-sml-green/5 rounded-full blur-[100px] pointer-events-none -z-10" />
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="mb-16 stagger-fade">
           <button
             onClick={() => onNavigate('home')}
-            className="inline-flex items-center text-sm text-gray-500 hover:text-sml-green transition-colors mb-6 group"
+            className="inline-flex items-center text-xs font-bold uppercase tracking-widest text-sml-text/60 hover:text-sml-green transition-colors mb-8 group"
           >
             <ArrowLeft className="w-4 h-4 mr-2 group-hover:-translate-x-1 transition-transform" />
             Back to Home
           </button>
 
-          <h2 className="text-4xl md:text-5xl font-serif font-bold text-sml-dark mb-6">
-            Product Catalog
+          <h2 className="text-4xl md:text-6xl font-serif font-bold text-sml-dark mb-6 tracking-tight">
+            Product <span className="text-gradient">Catalog</span>
           </h2>
-          <p className="text-gray-600 max-w-2xl">
+          <p className="text-lg text-sml-text/70 max-w-2xl leading-relaxed">
             Browse our comprehensive range of premium coconut coir products.
           </p>
         </div>
 
         {/* Category Filter */}
-        <div className="mb-8 flex gap-3 flex-wrap">
+        <div className="mb-12 flex gap-3 flex-wrap stagger-fade" style={{ animationDelay: '0.1s' }}>
           {categories.map((cat) => (
             <button
               key={cat}
               onClick={() => setSelectedCategory(cat)}
-              className={`px-6 py-2 rounded-full text-sm font-medium transition-all ${selectedCategory === cat
-                ? 'bg-sml-dark text-sml-cream'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest transition-all duration-300 ${selectedCategory === cat
+                ? 'bg-sml-green text-white shadow-[0_4px_15px_rgba(21,126,84,0.3)]'
+                : 'bg-white text-sml-text/70 hover:bg-sml-green/5 hover:text-sml-green border border-gray-200'
                 }`}
             >
               {cat}
@@ -88,47 +85,59 @@ export function ProductCatalog({ onNavigate }) {
             {filteredProducts.map((product) => (
               <motion.div
                 key={product.id}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg transition-shadow flex flex-col"
+                transition={{ duration: 0.5 }}
+                className="group surface-card flex flex-col overflow-hidden relative"
               >
-                <div className="h-48 bg-gradient-to-br from-amber-200 to-orange-400 flex items-center justify-center">
-                  <span className="text-4xl">📦</span>
+                <div className="h-56 relative overflow-hidden bg-black/5">
+                  <img
+                    src={getProductImage(product)}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-110"
+                    onError={(event) => {
+                      if (event.currentTarget.src.includes(PRODUCT_FALLBACK_IMAGE)) {
+                        return;
+                      }
+                      event.currentTarget.src = PRODUCT_FALLBACK_IMAGE;
+                    }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-sml-dark/80 via-sml-dark/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10" />
                 </div>
-                <div className="p-6 flex-1 flex flex-col">
-                  <div className="mb-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <h3 className="text-lg font-bold text-sml-dark">
+                <div className="p-8 flex-1 flex flex-col relative z-20 bg-white">
+                  <div className="mb-6 flex-grow">
+                    <div className="flex justify-between items-start mb-3">
+                      <h3 className="text-xl font-serif font-bold text-sml-dark group-hover:text-sml-green transition-colors duration-300">
                         {product.name}
                       </h3>
-                      <span className="text-[10px] bg-sml-cream-dark px-2 py-0.5 rounded text-sml-dark font-bold uppercase">
+                      <span className="text-[9px] bg-sml-green/10 px-2 py-1 rounded text-sml-green font-bold uppercase tracking-widest ml-2 border border-sml-green/20">
                         {product.category}
                       </span>
                     </div>
-                    <p className="text-gray-600 text-sm mb-3">
+                    <p className="text-sml-text/70 text-sm mb-4 line-clamp-2 leading-relaxed">
                       {product.description || 'Premium quality coconut coir product.'}
                     </p>
-                    <p className="text-xs text-gray-500 italic">
-                      {product.specifications || 'Natural, sustainable, biodegradable.'}
+                    <p className="text-xs text-sml-text/50 italic bg-gray-50 p-3 rounded-lg border border-gray-100">
+                      {formatSpecifications(product.specifications)}
                     </p>
                   </div>
 
-                  <div className="mt-auto space-y-3">
-                    <div className="pt-4 border-t border-gray-100">
-                      <p className="text-sm text-gray-700 font-medium">
-                        Price: <span className="text-sml-dark font-bold">${product.price} /{product.unit}</span>
-                      </p>
-                      <p className={`text-xs font-semibold mt-1 flex items-center ${product.stockQuantity > 0 ? 'text-sml-green' : 'text-red-500'}`}>
+                  <div className="mt-auto space-y-4">
+                    <div className="pt-4 border-t border-gray-100 flex justify-between items-end">
+                      <div>
+                        <p className="text-xs text-sml-text/60 font-medium uppercase tracking-widest mb-1">Price</p>
+                        <p className="text-sml-dark font-bold text-lg">${product.price} <span className="text-xs text-sml-text/60 font-normal">/{product.unit}</span></p>
+                      </div>
+                      <p className={`text-xs font-bold flex items-center bg-gray-50 px-2 py-1 rounded-md border ${product.stockQuantity > 0 ? 'text-sml-green border-sml-green/20' : 'text-red-500 border-red-500/20'}`}>
                         <Check className="w-3 h-3 mr-1" />
-                        {product.stockQuantity > 0 ? `In Stock (${product.stockQuantity})` : 'Out of Stock'}
+                        {product.stockQuantity > 0 ? `Stock: ${product.stockQuantity}` : 'Out of Stock'}
                       </p>
                     </div>
                     <button
-                      onClick={() => onNavigate('inquiry')}
-                      className="w-full bg-sml-dark text-sml-cream py-3 rounded-lg hover:bg-gray-800 font-bold tracking-wide transition-colors flex items-center justify-center"
+                      onClick={() => onNavigate('product', { ...product, productType: product.name, productKind: 'raw', imageUrl: getProductImage(product) })}
+                      className="w-full bg-sml-dark text-white py-3.5 px-4 rounded-xl hover:bg-sml-green font-bold text-xs uppercase tracking-widest transition-all duration-300 shadow-md flex items-center justify-center group/btn"
                     >
-                      <ShoppingBag className="w-4 h-4 mr-2" />
-                      Inquire Now
+                      View Details
                     </button>
                   </div>
                 </div>
@@ -141,6 +150,7 @@ export function ProductCatalog({ onNavigate }) {
             )}
           </div>
         )}
+
       </div>
     </section>
   );
