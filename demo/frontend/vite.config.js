@@ -25,13 +25,11 @@ export default defineConfig({
     },
   },
   server: {
-    host: '0.0.0.0',
-    port: process.env.PORT ? parseInt(process.env.PORT) : 5173,
-    strictPort: false,
+    port: 5173,
+    // Host config only for local development if needed
+    host: process.env.RAILWAY ? '0.0.0.0' : 'localhost',
   },
   preview: {
-    host: '0.0.0.0',
-    port: process.env.PORT ? parseInt(process.env.PORT) : 5173,
-    strictPort: false,
+    port: 5173,
   }
 })
