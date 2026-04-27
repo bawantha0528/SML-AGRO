@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { formatSpecifications } from '../utils/formatSpecifications';
 import { getProductImage, PRODUCT_FALLBACK_IMAGE } from '../utils/productImages';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sml-agro-backend-production.up.railway.app';
+
 export function ProductCatalog({ onNavigate }) {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [products, setProducts] = useState([]);
@@ -19,7 +21,7 @@ export function ProductCatalog({ onNavigate }) {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:8081/api/public/products');
+      const response = await fetch(`${API_BASE_URL}/api/public/products`);
       if (!response.ok) throw new Error('Failed to fetch products');
       const data = await response.json();
       setProducts(data);

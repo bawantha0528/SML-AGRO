@@ -3,6 +3,8 @@ import { useMemo, useState } from 'react';
 import { formatSpecifications } from '../utils/formatSpecifications';
 import { getProductGallery, PRODUCT_FALLBACK_IMAGE } from '../utils/productImages';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sml-agro-backend-production.up.railway.app';
+
 const COLOR_OPTIONS = ['Natural', 'Brown', 'Black', 'White', 'Green', 'Blue', 'Custom'];
 const SIZE_OPTIONS = ['Small', 'Medium', 'Large', 'Extra Large', 'Custom'];
 const BUDGET_OPTIONS = ['Under $500', '$500 - $2,000', '$2,000 - $5,000', '$5,000 - $10,000', 'Above $10,000'];
@@ -98,7 +100,7 @@ export function ProductDetailPage({ onNavigate, product }) {
         quantity,
       };
 
-      const response = await fetch('http://localhost:8081/api/custom-orders/submit', {
+      const response = await fetch(`${API_BASE_URL}/api/custom-orders/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
@@ -132,7 +134,7 @@ export function ProductDetailPage({ onNavigate, product }) {
         customizationDetails: `Color: ${selectedColor}, Size: ${selectedSize}`,
       };
 
-      const response = await fetch('http://localhost:8081/api/inquiries/submit', {
+      const response = await fetch(`${API_BASE_URL}/api/inquiries/submit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),

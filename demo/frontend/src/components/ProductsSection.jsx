@@ -11,6 +11,8 @@ import {
 import { useEffect, useState } from 'react';
 import { getProductImage, PRODUCT_FALLBACK_IMAGE } from '../utils/productImages';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sml-agro-backend-production.up.railway.app';
+
 export function ProductsSection({ onNavigate }) {
   const [products, setProducts] = useState([]);
 
@@ -24,7 +26,7 @@ export function ProductsSection({ onNavigate }) {
   };
 
   useEffect(() => {
-    fetch('http://localhost:8081/api/public/products')
+    fetch(`${API_BASE_URL}/api/public/products`)
       .then(res => res.json())
       .then(data => {
         // Show only first 6 on landing page

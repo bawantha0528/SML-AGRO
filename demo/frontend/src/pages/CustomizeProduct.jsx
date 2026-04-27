@@ -1,12 +1,14 @@
 import React, { useState } from "react";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://sml-agro-backend-production.up.railway.app";
+
 const CustomizeProduct = () => {
 
   const [details, setDetails] = useState("");
 
   const handleSubmit = async () => {
 
-    await fetch("http://localhost:8081/api/customization", {
+    await fetch(`${API_BASE_URL}/api/customization`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ customDetails: details })

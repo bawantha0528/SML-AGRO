@@ -3,6 +3,8 @@ import { Navbar } from './Navbar';
 import { Footer } from './Footer';
 import { Loader2, CheckCircle2, AlertCircle, Send } from 'lucide-react';
 
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sml-agro-backend-production.up.railway.app';
+
 const COUNTRIES = [
     'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
     'France', 'Netherlands', 'Belgium', 'UAE', 'Saudi Arabia', 'China',
@@ -64,7 +66,7 @@ export function InquiryPage({ onNavigate, initialCustomization }) {
         setSuccess(null);
 
         try {
-            const res = await fetch('http://localhost:8081/api/inquiries/submit', {
+            const res = await fetch(`${API_BASE_URL}/api/inquiries/submit`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(form),

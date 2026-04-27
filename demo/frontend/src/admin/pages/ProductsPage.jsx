@@ -1,7 +1,7 @@
 import { Edit2, Plus, Trash2, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
-const API_BASE_URL = 'http://localhost:8081/api/admin/products';
+const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'https://sml-agro-backend-production.up.railway.app'}/api/admin/products`;
 
 const EMPTY_PRODUCT = {
   name: '',
