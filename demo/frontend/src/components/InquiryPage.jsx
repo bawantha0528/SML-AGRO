@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { Navbar } from './Navbar';
+import { AlertCircle, CheckCircle2, Loader2, Send } from 'lucide-react';
+import { useState } from 'react';
 import { Footer } from './Footer';
-import { Loader2, CheckCircle2, AlertCircle, Send } from 'lucide-react';
+import { Navbar } from './Navbar';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'https://sml-agro-backend-production.up.railway.app';
 

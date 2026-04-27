@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "https://sml-agro-backend-production.up.railway.app";
 
