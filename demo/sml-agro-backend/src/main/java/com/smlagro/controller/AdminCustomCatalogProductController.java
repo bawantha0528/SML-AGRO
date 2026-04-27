@@ -19,7 +19,6 @@ import com.smlagro.service.CustomCatalogProductService;
 
 @RestController
 @RequestMapping("/api/admin/custom-products")
-@CrossOrigin(origins = "*")
 public class AdminCustomCatalogProductController {
 
     private final CustomCatalogProductService customCatalogProductService;

@@ -18,7 +18,6 @@ import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/custom-orders")
-@CrossOrigin(origins = "*")
 public class PublicCustomProductOrderController {
 
     private final CustomProductOrderService customProductOrderService;

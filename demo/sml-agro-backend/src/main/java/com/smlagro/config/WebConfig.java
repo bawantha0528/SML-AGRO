@@ -35,6 +35,8 @@ public class WebConfig {
             
             // Authorization rules
             .authorizeHttpRequests(authz -> authz
+                // Health check endpoints (no auth required)
+                .requestMatchers("/api/health", "/api/health/db").permitAll()
                 // Public endpoints
                 .requestMatchers("/api/public/**").permitAll()
                 .requestMatchers("/api/inquiries/submit").permitAll()

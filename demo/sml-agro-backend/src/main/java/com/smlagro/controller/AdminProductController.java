@@ -20,7 +20,6 @@ import com.smlagro.service.ProductService;
 
 @RestController
 @RequestMapping("/api/admin/products")
-@CrossOrigin(origins = "*")
 public class AdminProductController {
 
     @Autowired

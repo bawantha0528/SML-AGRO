@@ -13,7 +13,6 @@ import com.smlagro.service.CustomCatalogProductService;
 
 @RestController
 @RequestMapping("/api/public/custom-products")
-@CrossOrigin(origins = "*")
 public class PublicCustomCatalogProductController {
 
     private final CustomCatalogProductService customCatalogProductService;
